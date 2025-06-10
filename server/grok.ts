@@ -118,7 +118,9 @@ Respond with a JSON array in this exact format:
       cookingTime: Math.max(5, Math.min(180, meal.cookingTime || 30)),
       ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : [],
       instructions: meal.instructions || "",
-      rating: Math.max(4.0, Math.min(5.0, meal.rating || 4.5))
+      rating: Math.max(4.0, Math.min(5.0, meal.rating || 4.5)),
+      imageUrl: meal.imageUrl || undefined,
+      sourceUrl: meal.sourceUrl || undefined
     }));
 
   } catch (error) {

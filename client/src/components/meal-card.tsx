@@ -18,19 +18,29 @@ export function MealCard({ meal, selected, onToggle }: MealCardProps) {
       onClick={onToggle}
     >
       <div className="relative">
-        <div className="w-full h-48 bg-gray-200 rounded-t-lg flex items-center justify-center">
+        <div className="w-full h-48 bg-gray-200 rounded-t-lg overflow-hidden">
           {meal.imageUrl ? (
             <img 
               src={meal.imageUrl} 
               alt={meal.title}
-              className="w-full h-full object-cover rounded-t-lg"
+              className="w-full h-full object-cover rounded-t-lg transition-transform hover:scale-105"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.style.display = 'none';
+                const fallback = img.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
             />
-          ) : (
-            <div className="text-gray-400 text-center">
+          ) : null}
+          <div 
+            className={`w-full h-full flex items-center justify-center text-gray-400 text-center ${meal.imageUrl ? 'hidden' : 'flex'}`}
+            style={{ display: meal.imageUrl ? 'none' : 'flex' }}
+          >
+            <div>
               <div className="text-4xl mb-2">🍽️</div>
-              <div className="text-sm">No image available</div>
+              <div className="text-sm">Recipe image loading...</div>
             </div>
-          )}
+          </div>
         </div>
         {selected && (
           <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-2">
@@ -72,6 +82,12 @@ export function MealCard({ meal, selected, onToggle }: MealCardProps) {
           <p className="text-sm text-gray-600 mt-2 line-clamp-2">
             {meal.description}
           </p>
+        )}
+
+        {meal.sourceUrl && (
+          <div className="mt-2 text-xs text-gray-500">
+            Source: {new URL(meal.sourceUrl).hostname.replace('www.', '')}
+          </div>
         )}
       </CardContent>
     </Card>

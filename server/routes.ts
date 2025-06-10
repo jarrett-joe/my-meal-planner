@@ -158,6 +158,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               rating: suggestion.rating?.toString(),
               ingredients: suggestion.ingredients,
               instructions: suggestion.instructions,
+              imageUrl: suggestion.imageUrl,
+              sourceUrl: suggestion.sourceUrl,
             });
             
             return await storage.createMeal(mealData);
