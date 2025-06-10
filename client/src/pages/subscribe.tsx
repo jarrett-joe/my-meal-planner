@@ -46,7 +46,7 @@ function SubscribeForm() {
       } else {
         toast({
           title: "Payment Successful",
-          description: "You are now subscribed to MealPlan Pro!",
+          description: "You are now subscribed to Plan My Plates!",
         });
       }
     } catch (error) {
@@ -76,7 +76,7 @@ function SubscribeForm() {
         ) : (
           <>
             <Crown className="w-4 h-4 mr-2" />
-            Subscribe to MealPlan Pro
+            Subscribe to Plan My Plates
           </>
         )}
       </Button>
@@ -152,7 +152,7 @@ export default function Subscribe() {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Subscribe to MealPlan Pro</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Subscribe to Plan My Plates</h1>
           <p className="text-xl text-gray-600">Get unlimited access to AI-powered meal planning</p>
         </div>
 

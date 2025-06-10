@@ -122,7 +122,7 @@ export default function Landing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <Utensils className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-gray-900">MealPlan Pro</span>
+              <span className="text-xl font-bold text-gray-900">Plan My Plates</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-primary transition-colors">Features</a>

@@ -14,6 +14,8 @@ export interface MealSuggestion {
   ingredients: string[];
   instructions?: string;
   rating?: number;
+  imageUrl?: string;
+  sourceUrl?: string;
 }
 
 export async function generateMealSuggestions(
@@ -23,14 +25,21 @@ export async function generateMealSuggestions(
   count = 6
 ): Promise<MealSuggestion[]> {
   try {
-    const prompt = `You are a professional chef and meal planning expert. Generate ${count} diverse, delicious meal suggestions based on these preferences:
+    const prompt = `You are a professional chef and meal planning expert. Search ONLY these trusted recipe websites for authentic recipes:
+- https://www.halfbakedharvest.com
+- https://smittenkitchen.com  
+- https://www.thekitchn.com
+- https://barefootcontessa.com
+- https://www.allrecipes.com
+
+Generate ${count} diverse, delicious meal suggestions based on these preferences:
 
 Protein preferences: ${proteinPreferences.join(", ")}
 Cuisine preferences: ${cuisinePreferences.join(", ")}
 Dietary restrictions: ${dietaryRestrictions.length > 0 ? dietaryRestrictions.join(", ") : "None"}
 
 For each meal, provide:
-1. A creative and appetizing title
+1. A creative and appetizing title (from the actual recipe)
 2. A brief description (1-2 sentences)
 3. The main cuisine type (from the preferences if possible)
 4. The primary protein
@@ -38,20 +47,24 @@ For each meal, provide:
 6. A comprehensive list of ingredients
 7. Basic cooking instructions (optional)
 8. An estimated rating (4.0-5.0)
+9. The direct URL to the recipe image (find actual recipe photos)
+10. The source URL from one of the specified websites
 
-Ensure the meals are varied, practical for home cooking, and align with the specified preferences. Focus on authentic, well-balanced dishes.
+IMPORTANT: Only suggest recipes that exist on these websites. Include actual recipe image URLs and source URLs.
 
 Respond with a JSON array in this exact format:
 [
   {
     "title": "Meal Name",
     "description": "Brief description of the dish",
-    "cuisine": "Cuisine Type",
+    "cuisine": "Cuisine Type", 
     "protein": "Primary Protein",
     "cookingTime": 30,
     "ingredients": ["ingredient 1", "ingredient 2", "..."],
     "instructions": "Basic cooking steps",
-    "rating": 4.7
+    "rating": 4.7,
+    "imageUrl": "https://example.com/recipe-image.jpg",
+    "sourceUrl": "https://website.com/recipe-url"
   }
 ]`;
 
