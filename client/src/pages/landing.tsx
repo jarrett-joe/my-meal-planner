@@ -173,7 +173,7 @@ export default function Landing() {
                   <Brain className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold mb-4">AI-Powered Discovery</h3>
-                <p className="text-gray-600">Our GROK API integration searches the web to find meals that perfectly match your preferences and dietary needs.</p>
+                <p className="text-gray-600">Our AI integration searches the web to find meals that perfectly match your preferences and dietary needs.</p>
               </CardContent>
             </Card>
             
@@ -227,7 +227,7 @@ export default function Landing() {
                 <CardContent className="pt-6">
                   <div className="w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center mx-auto mb-6 text-xl font-bold">2</div>
                   <h3 className="text-xl font-semibold mb-4">AI Finds Perfect Meals</h3>
-                  <p className="text-gray-600">Our AI searches the web using GROK API to find meals that match your exact preferences and dietary requirements.</p>
+                  <p className="text-gray-600">Our AI searches the web to find meals that match your exact preferences and dietary requirements.</p>
                 </CardContent>
               </Card>
               <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">

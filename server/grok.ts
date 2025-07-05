@@ -95,15 +95,15 @@ Respond with a JSON object containing a "meals" array in this exact format:
 
     const content = response.choices[0].message.content;
     if (!content) {
-      throw new Error("No content received from GROK API");
+      throw new Error("No content received from AI API");
     }
 
-    // Parse the response - GROK might wrap the array in an object
+    // Parse the response - AI might wrap the array in an object
     let parsed;
     try {
       parsed = JSON.parse(content);
     } catch (e) {
-      throw new Error("Invalid JSON response from GROK API");
+      throw new Error("Invalid JSON response from AI API");
     }
 
     // Handle different response formats
@@ -115,7 +115,7 @@ Respond with a JSON object containing a "meals" array in this exact format:
     } else if (parsed.suggestions && Array.isArray(parsed.suggestions)) {
       meals = parsed.suggestions;
     } else {
-      throw new Error("Unexpected response format from GROK API");
+      throw new Error("Unexpected response format from AI API");
     }
 
     // Validate and clean the data
@@ -192,14 +192,14 @@ Respond with a JSON array in this exact format:
 
     const content = response.choices[0].message.content;
     if (!content) {
-      throw new Error("No content received from GROK API");
+      throw new Error("No content received from AI API");
     }
 
     let parsed;
     try {
       parsed = JSON.parse(content);
     } catch (e) {
-      throw new Error("Invalid JSON response from GROK API");
+      throw new Error("Invalid JSON response from AI API");
     }
 
     // Handle different response formats
@@ -211,7 +211,7 @@ Respond with a JSON array in this exact format:
     } else if (parsed.categories && Array.isArray(parsed.categories)) {
       groceryList = parsed.categories;
     } else {
-      throw new Error("Unexpected response format from GROK API");
+      throw new Error("Unexpected response format from AI API");
     }
 
     return groceryList.filter(category => 
