@@ -30,7 +30,7 @@ const mockMeals = [
     protein: "Chicken",
     cookingTime: 30,
     rating: 4.8,
-    imageUrl: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop&q=80", // Creamy chicken pasta
+    imageUrl: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=800&h=600&fit=crop&q=80", // Creamy Tuscan chicken pasta
     selected: false
   },
   {
@@ -40,7 +40,7 @@ const mockMeals = [
     protein: "Vegetarian",
     cookingTime: 25,
     rating: 4.6,
-    imageUrl: "https://images.unsplash.com/photo-1546793665-c74683f339c1?w=800&h=600&fit=crop&q=80", // Mediterranean quinoa bowl
+    imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=600&fit=crop&q=80", // Mediterranean quinoa bowl
     selected: true
   },
   {
