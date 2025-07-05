@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import mediterraneanQuinoaBowlImage from "@assets/mediterranean_quinoa_bowl_1751753480925.png";
+import creamyTuscanPastaImage from "@assets/creamy-tuscan-past_1751753523744.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,7 +32,7 @@ const mockMeals = [
     protein: "Chicken",
     cookingTime: 30,
     rating: 4.8,
-    imageUrl: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=800&h=600&fit=crop&q=80", // Creamy Tuscan chicken pasta
+    imageUrl: creamyTuscanPastaImage, // Creamy Tuscan chicken pasta
     selected: false
   },
   {
