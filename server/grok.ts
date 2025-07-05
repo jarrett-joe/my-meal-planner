@@ -25,55 +25,64 @@ export async function generateMealSuggestions(
   count = 6
 ): Promise<MealSuggestion[]> {
   try {
-    const prompt = `You are a professional chef and meal planning expert. Search ONLY these trusted recipe websites for authentic recipes:
-- https://www.halfbakedharvest.com
-- https://smittenkitchen.com  
-- https://www.thekitchn.com
-- https://barefootcontessa.com
-- https://www.allrecipes.com
+    const prompt = `You are a professional chef and meal planning expert creating original recipes for a family of 4 people. Use these high-quality food websites as inspiration for cooking styles and flavor profiles:
+- halfbakedharvest.com (rustic, seasonal, comfort food)
+- smittenkitchen.com (precise, elegant, tested recipes)
+- thekitchn.com (practical, approachable home cooking)
+- barefootcontessa.com (simple, quality ingredients)
+- allrecipes.com (family-friendly, reliable techniques)
 
-Generate ${count} diverse, delicious meal suggestions based on these preferences:
+Create ${count} original meal suggestions based on these preferences:
 
 Protein preferences: ${proteinPreferences.join(", ")}
 Cuisine preferences: ${cuisinePreferences.join(", ")}
 Dietary restrictions: ${dietaryRestrictions.length > 0 ? dietaryRestrictions.join(", ") : "None"}
 
+STRICT REQUIREMENTS:
+- All meals must serve 4 people (adjust ingredient quantities accordingly)
+- NEVER use seed oils (canola, vegetable, sunflower, safflower, etc.)
+- ONLY use Extra Virgin Olive Oil (EVOO) or Avocado Oil for any cooking fat
+- Create original recipes inspired by the cooking styles of the listed websites
+- Ensure variety in cooking methods and ingredients
+
 For each meal, provide:
-1. A creative and appetizing title (from the actual recipe)
-2. A brief description (1-2 sentences)
+1. A creative and appetizing title
+2. A brief description (1-2 sentences) mentioning it serves 4
 3. The main cuisine type (from the preferences if possible)
 4. The primary protein
 5. Estimated cooking time in minutes
-6. A comprehensive list of ingredients
-7. Basic cooking instructions (optional)
+6. A comprehensive list of ingredients with quantities for 4 servings (using only EVOO or avocado oil)
+7. Basic cooking instructions
 8. An estimated rating (4.0-5.0)
-9. The direct URL to the recipe image (find actual recipe photos)
-10. The source URL from one of the specified websites
+9. Optional: Image URL if available from inspiration sources
+10. Optional: Source URL if referencing inspiration from the listed websites
 
-IMPORTANT: Only suggest recipes that exist on these websites. Include actual recipe image URLs and source URLs.
+IMPORTANT: Only use EVOO or avocado oil. Never include any seed oils in ingredients.
 
-Respond with a JSON array in this exact format:
-[
-  {
-    "title": "Meal Name",
-    "description": "Brief description of the dish",
-    "cuisine": "Cuisine Type", 
-    "protein": "Primary Protein",
-    "cookingTime": 30,
-    "ingredients": ["ingredient 1", "ingredient 2", "..."],
-    "instructions": "Basic cooking steps",
-    "rating": 4.7,
-    "imageUrl": "https://example.com/recipe-image.jpg",
-    "sourceUrl": "https://website.com/recipe-url"
-  }
-]`;
+Respond with a JSON object containing a "meals" array in this exact format:
+{
+  "meals": [
+    {
+      "title": "Meal Name (Serves 4)",
+      "description": "Brief description of the dish for 4 people",
+      "cuisine": "Cuisine Type", 
+      "protein": "Primary Protein",
+      "cookingTime": 30,
+      "ingredients": ["2 lbs ingredient (for 4 servings)", "1/4 cup EVOO", "..."],
+      "instructions": "Step-by-step cooking instructions using only EVOO or avocado oil",
+      "rating": 4.7,
+      "imageUrl": "optional_image_url",
+      "sourceUrl": "optional_inspiration_url"
+    }
+  ]
+}`;
 
     const response = await openai.chat.completions.create({
       model: "grok-2-1212",
       messages: [
         {
           role: "system",
-          content: "You are a professional chef and meal planning expert. Always respond with valid JSON arrays containing meal suggestions."
+          content: "You are a professional chef and meal planning expert creating healthy meals for families. Always respond with valid JSON objects containing meal suggestions. Never use seed oils - only EVOO or avocado oil. All recipes must serve 4 people."
         },
         {
           role: "user",
@@ -137,19 +146,27 @@ export async function generateGroceryList(
       `${meal.title}: ${meal.ingredients.join(", ")}`
     ).join("\n");
 
-    const prompt = `Based on these selected meals and their ingredients, create a comprehensive, organized grocery list:
+    const prompt = `Based on these selected meals and their ingredients (all designed to serve 4 people), create a comprehensive, organized grocery list:
 
 ${mealsText}
 
-Organize the ingredients into logical grocery store categories (Proteins, Vegetables, Fruits, Dairy, Pantry Items, Spices & Seasonings, etc.). 
-Combine similar ingredients and provide reasonable quantities where possible.
-Remove duplicates and group similar items together.
+IMPORTANT REQUIREMENTS:
+- All meals serve 4 people, so quantities should reflect family-sized portions
+- NEVER include seed oils (canola, vegetable, sunflower, etc.) 
+- ONLY include Extra Virgin Olive Oil (EVOO) or Avocado Oil for cooking fats
+- Organize into logical grocery store categories (Proteins, Vegetables, Fruits, Dairy, Oils & Condiments, Pantry Items, Spices & Seasonings, etc.)
+- Combine similar ingredients and provide reasonable quantities for a family of 4
+- Remove duplicates and group similar items together
 
 Respond with a JSON array in this exact format:
 [
   {
     "category": "Proteins",
     "items": ["2 lbs chicken breast", "1 lb salmon fillet"]
+  },
+  {
+    "category": "Oils & Condiments", 
+    "items": ["Extra Virgin Olive Oil", "Avocado Oil"]
   },
   {
     "category": "Vegetables", 
