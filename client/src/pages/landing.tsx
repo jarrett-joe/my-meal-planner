@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import mediterraneanQuinoaBowlImage from "@assets/mediterranean_quinoa_bowl_1751753480925.png";
 import creamyTuscanPastaImage from "@assets/creamy-tuscan-past_1751753523744.png";
+import lemonHerbSalmonImage from "@assets/lemon-herb-salmon_1751753628065.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -62,7 +63,7 @@ const mockMeals = [
     protein: "Fish", 
     cookingTime: 20,
     rating: 4.7,
-    imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&h=600&fit=crop&q=80", // Lemon herb salmon
+    imageUrl: lemonHerbSalmonImage, // Lemon herb salmon
     selected: true
   },
   {
