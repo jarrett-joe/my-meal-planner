@@ -59,6 +59,7 @@ export const meals = pgTable("meals", {
   cookingTime: integer("cooking_time"), // in minutes
   rating: decimal("rating", { precision: 2, scale: 1 }),
   imageUrl: varchar("image_url"),
+  imageDescription: text("image_description"),
   ingredients: jsonb("ingredients").$type<string[]>().default([]),
   instructions: text("instructions"),
   sourceUrl: varchar("source_url"),

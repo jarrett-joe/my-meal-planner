@@ -159,6 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ingredients: suggestion.ingredients,
               instructions: suggestion.instructions,
               imageUrl: suggestion.imageUrl,
+              imageDescription: suggestion.imageDescription,
               sourceUrl: suggestion.sourceUrl,
             });
             

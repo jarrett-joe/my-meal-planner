@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { generateDeterministicFoodImage } from "./imageGenerator";
 
 const openai = new OpenAI({ 
   baseURL: "https://api.x.ai/v1", 
@@ -15,6 +16,7 @@ export interface MealSuggestion {
   instructions?: string;
   rating?: number;
   imageUrl?: string;
+  imageDescription?: string;
   sourceUrl?: string;
 }
 
@@ -54,10 +56,17 @@ For each meal, provide:
 6. A comprehensive list of ingredients with quantities for 4 servings (using only EVOO or avocado oil)
 7. Basic cooking instructions
 8. An estimated rating (4.0-5.0)
-9. Optional: Image URL if available from inspiration sources
+9. Generate a detailed, accurate description for a food photo that matches this exact recipe
 10. Optional: Source URL if referencing inspiration from the listed websites
 
 IMPORTANT: Only use EVOO or avocado oil. Never include any seed oils in ingredients.
+
+For the image description, be very specific about:
+- The exact dish being prepared
+- Key visual ingredients that should be visible
+- Cooking method appearance (grilled, roasted, sautéed, etc.)
+- Plating style and presentation
+- Colors and textures that match the recipe
 
 Respond with a JSON object containing a "meals" array in this exact format:
 {
@@ -71,7 +80,7 @@ Respond with a JSON object containing a "meals" array in this exact format:
       "ingredients": ["2 lbs ingredient (for 4 servings)", "1/4 cup EVOO", "..."],
       "instructions": "Step-by-step cooking instructions using only EVOO or avocado oil",
       "rating": 4.7,
-      "imageUrl": "optional_image_url",
+      "imageDescription": "Detailed description of how this exact dish should look when photographed - include specific visual details, colors, textures, and plating that match this recipe",
       "sourceUrl": "optional_inspiration_url"
     }
   ]
@@ -119,18 +128,22 @@ Respond with a JSON object containing a "meals" array in this exact format:
     }
 
     // Validate and clean the data
-    return meals.slice(0, count).map(meal => ({
-      title: meal.title || "Untitled Meal",
-      description: meal.description || "Delicious meal",
-      cuisine: meal.cuisine || "International",
-      protein: meal.protein || "Mixed",
-      cookingTime: Math.max(5, Math.min(180, meal.cookingTime || 30)),
-      ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : [],
-      instructions: meal.instructions || "",
-      rating: Math.max(4.0, Math.min(5.0, meal.rating || 4.5)),
-      imageUrl: meal.imageUrl || undefined,
-      sourceUrl: meal.sourceUrl || undefined
-    }));
+    return meals.slice(0, count).map(meal => {
+      const cleanMeal = {
+        title: meal.title || "Untitled Meal",
+        description: meal.description || "Delicious meal",
+        cuisine: meal.cuisine || "International",
+        protein: meal.protein || "Mixed",
+        cookingTime: Math.max(5, Math.min(180, meal.cookingTime || 30)),
+        ingredients: Array.isArray(meal.ingredients) ? meal.ingredients : [],
+        instructions: meal.instructions || "",
+        rating: Math.max(4.0, Math.min(5.0, meal.rating || 4.5)),
+        imageUrl: meal.imageUrl || generateDeterministicFoodImage(meal.title || "Untitled Meal", meal.cuisine || "International", meal.protein || "Mixed"),
+        imageDescription: meal.imageDescription || undefined,
+        sourceUrl: meal.sourceUrl || undefined
+      };
+      return cleanMeal;
+    });
 
   } catch (error) {
     console.error("Error generating meal suggestions:", error);

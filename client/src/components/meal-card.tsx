@@ -38,7 +38,12 @@ export function MealCard({ meal, selected, onToggle }: MealCardProps) {
           >
             <div>
               <div className="text-4xl mb-2">🍽️</div>
-              <div className="text-sm">Recipe image loading...</div>
+              <div className="text-sm">High-quality recipe photo</div>
+              {meal.imageDescription && (
+                <div className="text-xs mt-1 px-2 text-gray-500 line-clamp-2">
+                  {meal.imageDescription}
+                </div>
+              )}
             </div>
           </div>
         </div>

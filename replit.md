@@ -21,6 +21,9 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Display recipe images when available
 
 ## Recent Changes
+- **January 5, 2025**: Enhanced recipe-image matching system with contextual food photography
+- **January 5, 2025**: Added imageDescription field to AI prompts for better image-recipe alignment
+- **January 5, 2025**: Created deterministic image selection based on cuisine, protein, and dish type
 - **January 5, 2025**: Removed all customer-facing mentions of "GROK" and "XAI" - now only shows "AI" to users
 - **January 5, 2025**: Updated AI API prompts to create original family-sized recipes (serves 4)
 - **January 5, 2025**: Added strict requirement to only use EVOO or avocado oil, never seed oils
