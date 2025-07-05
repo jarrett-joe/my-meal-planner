@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import mediterraneanQuinoaBowlImage from "@assets/mediterranean_quinoa_bowl_1751753480925.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -40,7 +41,7 @@ const mockMeals = [
     protein: "Vegetarian",
     cookingTime: 25,
     rating: 4.6,
-    imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=600&fit=crop&q=80", // Mediterranean quinoa bowl
+    imageUrl: mediterraneanQuinoaBowlImage, // Mediterranean quinoa bowl
     selected: true
   },
   {
