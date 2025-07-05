@@ -30,7 +30,7 @@ const mockMeals = [
     protein: "Chicken",
     cookingTime: 30,
     rating: 4.8,
-    imageUrl: "https://images.unsplash.com/photo-1551892589-865f69869476?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+    imageUrl: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&h=600&fit=crop&q=80", // Italian pasta dish
     selected: false
   },
   {
@@ -40,7 +40,7 @@ const mockMeals = [
     protein: "Vegetarian",
     cookingTime: 25,
     rating: 4.6,
-    imageUrl: "https://images.unsplash.com/photo-1546793665-c74683f339c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+    imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=600&fit=crop&q=80", // Mediterranean quinoa bowl
     selected: true
   },
   {
@@ -50,7 +50,7 @@ const mockMeals = [
     protein: "Beef",
     cookingTime: 45,
     rating: 4.9,
-    imageUrl: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+    imageUrl: "https://images.unsplash.com/photo-1551615593-ef5fe247e8f7?w=800&h=600&fit=crop&q=80", // American beef steak
     selected: false
   },
   {
@@ -60,7 +60,7 @@ const mockMeals = [
     protein: "Fish", 
     cookingTime: 20,
     rating: 4.7,
-    imageUrl: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+    imageUrl: "https://images.unsplash.com/photo-1544944987-97ffc7ba2bc6?w=800&h=600&fit=crop&q=80", // Mediterranean fish salmon
     selected: true
   },
   {
@@ -70,7 +70,7 @@ const mockMeals = [
     protein: "Chicken",
     cookingTime: 15,
     rating: 4.5,
-    imageUrl: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250",
+    imageUrl: "https://images.unsplash.com/photo-1563379091339-03246963d96c?w=800&h=600&fit=crop&q=80", // Asian chicken stir-fry
     selected: false
   }
 ];
