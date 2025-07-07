@@ -133,6 +133,7 @@ export default function Landing() {
               <a href="#how-it-works" className="text-gray-600 hover:text-primary transition-colors">How It Works</a>
               <Button variant="ghost" onClick={() => setShowLogin(true)}>Sign In</Button>
               <Button onClick={() => setShowSignup(true)}>Get Started</Button>
+              <a href="/admin" className="text-xs text-gray-400 hover:text-gray-600">Admin</a>
             </div>
           </div>
         </div>

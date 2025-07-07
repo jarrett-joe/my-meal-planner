@@ -8,6 +8,7 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Subscribe from "@/pages/subscribe";
 import Favorites from "@/pages/favorites";
+import AdminLogin from "@/pages/admin-login";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
         <>
           <Route path="/" component={Landing} />
           <Route path="/subscribe" component={Subscribe} />
+          <Route path="/admin" component={AdminLogin} />
         </>
       ) : (
         <>
@@ -26,6 +28,7 @@ function Router() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/favorites" component={Favorites} />
           <Route path="/subscribe" component={Subscribe} />
+          <Route path="/admin" component={AdminLogin} />
         </>
       )}
       <Route component={NotFound} />

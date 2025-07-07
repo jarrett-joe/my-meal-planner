@@ -10,7 +10,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { PreferenceChips } from "@/components/preference-chips";
 import { MealCard } from "@/components/meal-card";
 import { GroceryListModal } from "@/components/grocery-list-modal";
-import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard, Heart, Calendar } from "lucide-react";
+import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard, Heart, Calendar, LogOut } from "lucide-react";
 import { Link } from "wouter";
 import { MealCalendar } from "@/components/meal-calendar";
 import type { Meal, UserPreferences } from "@shared/schema";
@@ -200,6 +200,20 @@ export default function Dashboard() {
     setShowCalendar(true);
   };
 
+  const handleAdminLogout = async () => {
+    try {
+      await apiRequest("POST", "/api/auth/admin-logout");
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.href = "/";
+    } catch (error) {
+      toast({
+        title: "Logout Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -239,9 +253,16 @@ export default function Dashboard() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-semibold text-gray-900">
-              Welcome back, {user.firstName || 'Chef'}!
-            </h1>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">
+                Welcome back, {user.firstName || 'Chef'}!
+              </h1>
+              {user?.id === 'admin-master' && (
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 mt-1">
+                  Master Admin Access
+                </Badge>
+              )}
+            </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/20 rounded-full">
                 <CreditCard className="w-4 h-4 text-orange-600 dark:text-orange-400" />
@@ -270,10 +291,17 @@ export default function Dashboard() {
                   Favorites
                 </Button>
               </Link>
-              <Button variant="outline" size="sm" onClick={() => window.location.href = '/api/logout'}>
-                <Settings className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+              {user?.id === 'admin-master' ? (
+                <Button variant="outline" size="sm" onClick={handleAdminLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => window.location.href = '/api/logout'}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              )}
             </div>
           </div>
         </div>

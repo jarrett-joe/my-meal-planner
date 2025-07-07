@@ -24,9 +24,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Master admin login route
+  app.post('/api/auth/admin-login', async (req, res) => {
+    const { username, password } = req.body;
+    
+    // Simple admin credentials (you can change these)
+    if (username === 'admin' && password === 'planmyplates2025') {
+      // Create or get admin user
+      let adminUser = await storage.getUser('admin-master');
+      if (!adminUser) {
+        adminUser = await storage.upsertUser({
+          id: 'admin-master',
+          email: 'admin@planmyplates.com',
+          firstName: 'Master',
+          lastName: 'Admin',
+          profileImageUrl: null,
+          mealCredits: 999999,
+          subscriptionPlan: 'premium',
+          subscriptionStatus: 'active'
+        });
+      }
+
+      // Set session
+      req.session.adminUser = adminUser;
+      res.json({ success: true, user: adminUser });
+    } else {
+      res.status(401).json({ message: "Invalid admin credentials" });
+    }
+  });
+
+  // Admin logout
+  app.post('/api/auth/admin-logout', (req, res) => {
+    req.session.adminUser = null;
+    res.json({ success: true });
+  });
+
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
+      // Check for admin session first
+      if (req.session.adminUser) {
+        return res.json(req.session.adminUser);
+      }
+
+      // Regular auth check
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       res.json(user);
