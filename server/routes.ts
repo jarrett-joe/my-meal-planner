@@ -386,6 +386,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Favorites routes
+  app.get('/api/favorites', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const favorites = await storage.getUserFavorites(userId);
+      res.json(favorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      res.status(500).json({ message: "Failed to fetch favorites" });
+    }
+  });
+
+  app.post('/api/favorites/:mealId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const mealId = parseInt(req.params.mealId);
+      const favorite = await storage.addToFavorites(userId, mealId);
+      res.json(favorite);
+    } catch (error) {
+      console.error("Error adding to favorites:", error);
+      res.status(500).json({ message: "Failed to add to favorites" });
+    }
+  });
+
+  app.delete('/api/favorites/:mealId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const mealId = parseInt(req.params.mealId);
+      await storage.removeFromFavorites(userId, mealId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing from favorites:", error);
+      res.status(500).json({ message: "Failed to remove from favorites" });
+    }
+  });
+
+  // Calendar routes
+  app.get('/api/calendar', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const startDate = new Date(req.query.startDate as string);
+      const endDate = new Date(req.query.endDate as string);
+      const calendarMeals = await storage.getCalendarMeals(userId, startDate, endDate);
+      res.json(calendarMeals);
+    } catch (error) {
+      console.error("Error fetching calendar meals:", error);
+      res.status(500).json({ message: "Failed to fetch calendar meals" });
+    }
+  });
+
+  app.post('/api/calendar', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { mealId, scheduledDate, mealType } = req.body;
+      const calendarEntry = await storage.addToCalendar({
+        userId,
+        mealId: parseInt(mealId),
+        scheduledDate,
+        mealType: mealType || 'dinner'
+      });
+      res.json(calendarEntry);
+    } catch (error) {
+      console.error("Error adding to calendar:", error);
+      res.status(500).json({ message: "Failed to add to calendar" });
+    }
+  });
+
+  app.delete('/api/calendar', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { scheduledDate, mealType } = req.query;
+      await storage.removeFromCalendar(userId, new Date(scheduledDate as string), mealType as string);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing from calendar:", error);
+      res.status(500).json({ message: "Failed to remove from calendar" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

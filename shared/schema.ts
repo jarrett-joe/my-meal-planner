@@ -9,6 +9,8 @@ import {
   integer,
   boolean,
   decimal,
+  unique,
+  date,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -87,6 +89,28 @@ export const groceryLists = pgTable("grocery_lists", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// User favorite meals
+export const userFavorites = pgTable("user_favorites", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  mealId: integer("meal_id").notNull().references(() => meals.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userMealUnique: unique().on(table.userId, table.mealId),
+}));
+
+// Meal calendar entries
+export const mealCalendar = pgTable("meal_calendar", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  mealId: integer("meal_id").notNull().references(() => meals.id, { onDelete: "cascade" }),
+  scheduledDate: date("scheduled_date").notNull(),
+  mealType: varchar("meal_type", { length: 20 }).notNull().default("dinner"), // breakfast, lunch, dinner
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userDateMealUnique: unique().on(table.userId, table.scheduledDate, table.mealType),
+}));
+
 // Schemas for validation
 export const insertUserPreferencesSchema = createInsertSchema(userPreferences).omit({
   id: true,
@@ -109,6 +133,16 @@ export const insertGroceryListSchema = createInsertSchema(groceryLists).omit({
   createdAt: true,
 });
 
+export const insertUserFavoriteSchema = createInsertSchema(userFavorites).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMealCalendarSchema = createInsertSchema(mealCalendar).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -120,3 +154,7 @@ export type UserMealSelection = typeof userMealSelections.$inferSelect;
 export type InsertUserMealSelection = z.infer<typeof insertUserMealSelectionSchema>;
 export type GroceryList = typeof groceryLists.$inferSelect;
 export type InsertGroceryList = z.infer<typeof insertGroceryListSchema>;
+export type UserFavorite = typeof userFavorites.$inferSelect;
+export type InsertUserFavorite = z.infer<typeof insertUserFavoriteSchema>;
+export type MealCalendar = typeof mealCalendar.$inferSelect;
+export type InsertMealCalendar = z.infer<typeof insertMealCalendarSchema>;

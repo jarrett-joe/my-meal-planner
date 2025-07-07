@@ -4,6 +4,8 @@ import {
   meals,
   userMealSelections,
   groceryLists,
+  userFavorites,
+  mealCalendar,
   type User,
   type UpsertUser,
   type UserPreferences,
@@ -14,6 +16,10 @@ import {
   type InsertUserMealSelection,
   type GroceryList,
   type InsertGroceryList,
+  type UserFavorite,
+  type InsertUserFavorite,
+  type MealCalendar,
+  type InsertMealCalendar,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
@@ -44,6 +50,17 @@ export interface IStorage {
   // Grocery lists
   getGroceryList(userId: string, weekStartDate: Date): Promise<GroceryList | undefined>;
   upsertGroceryList(groceryList: InsertGroceryList): Promise<GroceryList>;
+  
+  // User favorites
+  getUserFavorites(userId: string): Promise<(UserFavorite & { meal: Meal })[]>;
+  addToFavorites(userId: string, mealId: number): Promise<UserFavorite>;
+  removeFromFavorites(userId: string, mealId: number): Promise<void>;
+  
+  // Meal calendar
+  getCalendarMeals(userId: string, startDate: Date, endDate: Date): Promise<(MealCalendar & { meal: Meal })[]>;
+  addToCalendar(calendar: InsertMealCalendar): Promise<MealCalendar>;
+  removeFromCalendar(userId: string, scheduledDate: Date, mealType: string): Promise<void>;
+  updateCalendarEntry(userId: string, scheduledDate: Date, mealType: string, mealId: number): Promise<MealCalendar>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -233,6 +250,106 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return result;
+  }
+
+  // User favorites methods
+  async getUserFavorites(userId: string): Promise<(UserFavorite & { meal: Meal })[]> {
+    const favorites = await db
+      .select({
+        id: userFavorites.id,
+        userId: userFavorites.userId,
+        mealId: userFavorites.mealId,
+        createdAt: userFavorites.createdAt,
+        meal: meals,
+      })
+      .from(userFavorites)
+      .innerJoin(meals, eq(userFavorites.mealId, meals.id))
+      .where(eq(userFavorites.userId, userId))
+      .orderBy(desc(userFavorites.createdAt));
+    
+    return favorites;
+  }
+
+  async addToFavorites(userId: string, mealId: number): Promise<UserFavorite> {
+    const [favorite] = await db
+      .insert(userFavorites)
+      .values({ userId, mealId })
+      .onConflictDoNothing()
+      .returning();
+    return favorite;
+  }
+
+  async removeFromFavorites(userId: string, mealId: number): Promise<void> {
+    await db
+      .delete(userFavorites)
+      .where(and(eq(userFavorites.userId, userId), eq(userFavorites.mealId, mealId)));
+  }
+
+  // Meal calendar methods
+  async getCalendarMeals(userId: string, startDate: Date, endDate: Date): Promise<(MealCalendar & { meal: Meal })[]> {
+    const calendarMeals = await db
+      .select({
+        id: mealCalendar.id,
+        userId: mealCalendar.userId,
+        mealId: mealCalendar.mealId,
+        scheduledDate: mealCalendar.scheduledDate,
+        mealType: mealCalendar.mealType,
+        createdAt: mealCalendar.createdAt,
+        meal: meals,
+      })
+      .from(mealCalendar)
+      .innerJoin(meals, eq(mealCalendar.mealId, meals.id))
+      .where(
+        and(
+          eq(mealCalendar.userId, userId),
+          gte(mealCalendar.scheduledDate, startDate.toISOString().split('T')[0]),
+          lte(mealCalendar.scheduledDate, endDate.toISOString().split('T')[0])
+        )
+      )
+      .orderBy(mealCalendar.scheduledDate, mealCalendar.mealType);
+    
+    return calendarMeals;
+  }
+
+  async addToCalendar(calendarData: InsertMealCalendar): Promise<MealCalendar> {
+    const [calendar] = await db
+      .insert(mealCalendar)
+      .values(calendarData)
+      .onConflictDoUpdate({
+        target: [mealCalendar.userId, mealCalendar.scheduledDate, mealCalendar.mealType],
+        set: {
+          mealId: calendarData.mealId,
+        },
+      })
+      .returning();
+    return calendar;
+  }
+
+  async removeFromCalendar(userId: string, scheduledDate: Date, mealType: string): Promise<void> {
+    await db
+      .delete(mealCalendar)
+      .where(
+        and(
+          eq(mealCalendar.userId, userId),
+          eq(mealCalendar.scheduledDate, scheduledDate.toISOString().split('T')[0]),
+          eq(mealCalendar.mealType, mealType)
+        )
+      );
+  }
+
+  async updateCalendarEntry(userId: string, scheduledDate: Date, mealType: string, mealId: number): Promise<MealCalendar> {
+    const [calendar] = await db
+      .update(mealCalendar)
+      .set({ mealId })
+      .where(
+        and(
+          eq(mealCalendar.userId, userId),
+          eq(mealCalendar.scheduledDate, scheduledDate.toISOString().split('T')[0]),
+          eq(mealCalendar.mealType, mealType)
+        )
+      )
+      .returning();
+    return calendar;
   }
 }
 

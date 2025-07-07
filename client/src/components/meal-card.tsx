@@ -1,15 +1,67 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, Check, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, Check, Clock, Heart, Calendar } from "lucide-react";
 import type { Meal } from "@shared/schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface MealCardProps {
   meal: Meal;
   selected: boolean;
   onToggle: () => void;
+  isFavorite?: boolean;
+  onFavoriteToggle?: (mealId: number, isFavorite: boolean) => void;
+  onAddToCalendar?: (meal: Meal) => void;
 }
 
-export function MealCard({ meal, selected, onToggle }: MealCardProps) {
+export function MealCard({ 
+  meal, 
+  selected, 
+  onToggle, 
+  isFavorite = false, 
+  onFavoriteToggle, 
+  onAddToCalendar 
+}: MealCardProps) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const favoriteMutation = useMutation({
+    mutationFn: async (isFav: boolean) => {
+      if (isFav) {
+        await apiRequest("POST", `/api/favorites/${meal.id}`, {});
+      } else {
+        await apiRequest("DELETE", `/api/favorites/${meal.id}`, {});
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
+      if (onFavoriteToggle) {
+        onFavoriteToggle(meal.id, !isFavorite);
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update favorites",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    favoriteMutation.mutate(!isFavorite);
+  };
+
+  const handleCalendarClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddToCalendar) {
+      onAddToCalendar(meal);
+    }
+  };
   return (
     <Card 
       className={`cursor-pointer transition-all hover:shadow-lg ${
@@ -94,6 +146,34 @@ export function MealCard({ meal, selected, onToggle }: MealCardProps) {
             Source: {new URL(meal.sourceUrl).hostname.replace('www.', '')}
           </div>
         )}
+
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-3 mt-3 border-t">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleFavoriteClick}
+            disabled={favoriteMutation.isPending}
+            className="flex-1 text-xs"
+          >
+            <Heart 
+              className={`w-4 h-4 mr-1 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} 
+            />
+            {isFavorite ? 'Favorited' : 'Favorite'}
+          </Button>
+          
+          {onAddToCalendar && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCalendarClick}
+              className="flex-1 text-xs"
+            >
+              <Calendar className="w-4 h-4 mr-1" />
+              Add to Calendar
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

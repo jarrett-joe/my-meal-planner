@@ -10,8 +10,9 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { PreferenceChips } from "@/components/preference-chips";
 import { MealCard } from "@/components/meal-card";
 import { GroceryListModal } from "@/components/grocery-list-modal";
-import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard } from "lucide-react";
+import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard, Heart, Calendar } from "lucide-react";
 import { Link } from "wouter";
+import { MealCalendar } from "@/components/meal-calendar";
 import type { Meal, UserPreferences } from "@shared/schema";
 
 function getWeekStart(): Date {
@@ -29,10 +30,17 @@ export default function Dashboard() {
   const [selectedMeals, setSelectedMeals] = useState<Set<number>>(new Set());
   const [showGroceryList, setShowGroceryList] = useState(false);
   const [weekStartDate] = useState(getWeekStart());
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // Fetch user preferences
   const { data: preferences, isLoading: preferencesLoading } = useQuery({
     queryKey: ["/api/preferences"],
+    enabled: !!user,
+  });
+
+  // Fetch user favorites
+  const { data: favorites = [] } = useQuery({
+    queryKey: ["/api/favorites"],
     enabled: !!user,
   });
 
@@ -179,6 +187,19 @@ export default function Dashboard() {
     refetchMeals();
   };
 
+  const handleFavoriteToggle = (mealId: number, isFavorite: boolean) => {
+    // This will be handled by the MealCard component's mutation
+    // The query will be invalidated automatically
+  };
+
+  const handleAddToCalendar = (meal: Meal) => {
+    toast({
+      title: "Calendar Feature",
+      description: "Click the calendar tab to plan your meals for specific dates!",
+    });
+    setShowCalendar(true);
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -243,9 +264,15 @@ export default function Dashboard() {
                   </Button>
                 </Link>
               )}
-              <Button variant="outline" size="sm">
+              <Link href="/favorites">
+                <Button variant="outline" size="sm">
+                  <Heart className="w-4 h-4 mr-2" />
+                  Favorites
+                </Button>
+              </Link>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = '/api/logout'}>
                 <Settings className="w-4 h-4 mr-2" />
-                Account
+                Logout
               </Button>
             </div>
           </div>
@@ -333,6 +360,9 @@ export default function Dashboard() {
                       meal={meal}
                       selected={selectedMeals.has(meal.id)}
                       onToggle={() => toggleMealSelection(meal.id)}
+                      isFavorite={favorites.some((fav: any) => fav.meal.id === meal.id)}
+                      onFavoriteToggle={handleFavoriteToggle}
+                      onAddToCalendar={handleAddToCalendar}
                     />
                   ))}
                 </div>
@@ -353,6 +383,35 @@ export default function Dashboard() {
               </Button>
             </div>
           )}
+
+          {/* Calendar Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Meal Calendar
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCalendar(!showCalendar)}
+                >
+                  {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
+                </Button>
+              </div>
+            </CardHeader>
+            {showCalendar && (
+              <CardContent>
+                <MealCalendar onMealSelect={(meal) => {
+                  toast({
+                    title: meal.title,
+                    description: meal.description,
+                  });
+                }} />
+              </CardContent>
+            )}
+          </Card>
         </div>
       </div>
 
