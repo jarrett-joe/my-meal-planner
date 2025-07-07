@@ -10,7 +10,8 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { PreferenceChips } from "@/components/preference-chips";
 import { MealCard } from "@/components/meal-card";
 import { GroceryListModal } from "@/components/grocery-list-modal";
-import { RefreshCw, ListChecks, Settings, ChefHat } from "lucide-react";
+import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard } from "lucide-react";
+import { Link } from "wouter";
 import type { Meal, UserPreferences } from "@shared/schema";
 
 function getWeekStart(): Date {
@@ -36,21 +37,30 @@ export default function Dashboard() {
   });
 
   // Fetch suggested meals
-  const { data: meals = [], isLoading: mealsLoading, refetch: refetchMeals } = useQuery({
+  const { data: meals = [], isLoading: mealsLoading, refetch: refetchMeals, error: mealsError } = useQuery({
     queryKey: ["/api/meals", preferences],
     queryFn: async () => {
       if (!preferences?.proteinPreferences?.length && !preferences?.cuisinePreferences?.length) {
         return [];
       }
       
-      const response = await apiRequest("POST", "/api/meals/suggestions", {
-        proteinPreferences: preferences.proteinPreferences || [],
-        cuisinePreferences: preferences.cuisinePreferences || [],
-        count: 8
-      });
-      return response.json();
+      try {
+        const response = await apiRequest("POST", "/api/meals/suggestions", {
+          proteinPreferences: preferences.proteinPreferences || [],
+          cuisinePreferences: preferences.cuisinePreferences || [],
+          count: 8
+        });
+        return response.json();
+      } catch (error: any) {
+        if (error.message.includes('402') || error.message.includes('Insufficient meal credits')) {
+          // Handle insufficient credits gracefully
+          return [];
+        }
+        throw error;
+      }
     },
     enabled: !!user && !!preferences,
+    retry: false,
   });
 
   // Update preferences mutation
@@ -212,9 +222,27 @@ export default function Dashboard() {
               Welcome back, {user.firstName || 'Chef'}!
             </h1>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-2 px-3 py-1 bg-orange-100 dark:bg-orange-900/20 rounded-full">
+                <CreditCard className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                <span className="text-sm font-medium">
+                  {user?.mealCredits || 0} credits
+                </span>
+                {user?.subscriptionPlan === 'trial' && (
+                  <Badge variant="outline" className="text-xs ml-1">
+                    Trial
+                  </Badge>
+                )}
+              </div>
               <Badge variant="secondary">
                 {selectedMeals.size}/10 meals selected
               </Badge>
+              {(user?.mealCredits || 0) === 0 && (
+                <Link href="/subscribe">
+                  <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                    Get More Meals
+                  </Button>
+                </Link>
+              )}
               <Button variant="outline" size="sm">
                 <Settings className="w-4 h-4 mr-2" />
                 Account

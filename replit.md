@@ -8,7 +8,9 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Family-sized recipes (serves 4 people)
 - Healthy cooking with only EVOO and avocado oil (no seed oils)
 - Automated grocery list generation
-- Subscription-based access with Stripe payments
+- Meal-based subscription system with credit tracking
+- 10 free trial meals for new users
+- Three subscription tiers: Basic (20 meals/$10), Standard (40 meals/$20), Premium (60 meals/$30)
 - User authentication via Replit Auth
 - PostgreSQL database for data persistence
 
@@ -21,6 +23,13 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Display recipe images when available
 
 ## Recent Changes
+- **January 7, 2025**: Implemented meal-based subscription system instead of time-based plans
+- **January 7, 2025**: Added 10 free trial meals for all new users (no credit card required)
+- **January 7, 2025**: Created three subscription tiers: Basic ($10/20 meals), Standard ($20/40 meals), Premium ($30/60 meals)
+- **January 7, 2025**: Added meal credit tracking and deduction system in database schema
+- **January 7, 2025**: Updated subscription page with new pricing plans and meal-per-dollar display
+- **January 7, 2025**: Enhanced dashboard to show remaining meal credits and subscription status
+- **January 7, 2025**: Integrated meal credit validation into AI meal generation endpoints
 - **January 5, 2025**: Enhanced recipe-image matching system with contextual food photography
 - **January 5, 2025**: Added imageDescription field to AI prompts for better image-recipe alignment
 - **January 5, 2025**: Created deterministic image selection based on cuisine, protein, and dish type

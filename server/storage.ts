@@ -24,6 +24,8 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserStripeInfo(userId: string, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User>;
   updateSubscriptionStatus(userId: string, status: string): Promise<User>;
+  updateUserMealCredits(userId: string, credits: number, plan: string): Promise<User>;
+  deductMealCredit(userId: string): Promise<User | null>;
   
   // User preferences
   getUserPreferences(userId: string): Promise<UserPreferences | undefined>;
@@ -90,6 +92,37 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async updateUserMealCredits(userId: string, credits: number, plan: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        mealCredits: credits,
+        subscriptionPlan: plan,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async deductMealCredit(userId: string): Promise<User | null> {
+    const user = await this.getUser(userId);
+    if (!user || user.mealCredits <= 0) {
+      return null;
+    }
+    
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        mealCredits: user.mealCredits - 1,
+        totalMealsUsed: user.totalMealsUsed + 1,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
   }
 
   // User preferences

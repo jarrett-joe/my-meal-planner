@@ -33,7 +33,10 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
-  subscriptionStatus: varchar("subscription_status").default("inactive"),
+  subscriptionStatus: varchar("subscription_status").default("trial"),
+  subscriptionPlan: varchar("subscription_plan").default("trial"), // 'trial', 'basic', 'standard', 'premium'
+  mealCredits: integer("meal_credits").default(10), // Start with 10 free trial meals
+  totalMealsUsed: integer("total_meals_used").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

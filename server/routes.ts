@@ -94,6 +94,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create meal-based subscription
+  app.post('/api/create-subscription', isAuthenticated, async (req: any, res) => {
+    const userId = req.user.claims.sub;
+    const { planId } = req.body;
+    
+    let user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Define meal plans and their Stripe price mapping
+    const mealPlans = {
+      basic: { meals: 20, priceId: process.env.STRIPE_PRICE_BASIC || 'price_basic' },
+      standard: { meals: 40, priceId: process.env.STRIPE_PRICE_STANDARD || 'price_standard' },
+      premium: { meals: 60, priceId: process.env.STRIPE_PRICE_PREMIUM || 'price_premium' }
+    };
+
+    const selectedPlan = mealPlans[planId as keyof typeof mealPlans];
+    if (!selectedPlan) {
+      return res.status(400).json({ message: "Invalid plan selected" });
+    }
+
+    if (user.stripeSubscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
+        const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent;
+        
+        res.json({
+          subscriptionId: subscription.id,
+          clientSecret: paymentIntent?.client_secret,
+        });
+        return;
+      } catch (error) {
+        console.error("Error retrieving existing subscription:", error);
+      }
+    }
+    
+    if (!user.email) {
+      return res.status(400).json({ message: 'No user email on file' });
+    }
+
+    try {
+      let customerId = user.stripeCustomerId;
+      
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+        });
+        customerId = customer.id;
+        await storage.updateUserStripeInfo(user.id, customerId, "");
+      }
+
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: selectedPlan.priceId }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+        metadata: {
+          planId,
+          mealCredits: selectedPlan.meals.toString(),
+        },
+      });
+
+      await storage.updateUserStripeInfo(user.id, customerId, subscription.id);
+      
+      const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
+      const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
+  
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: paymentIntent.client_secret,
+      });
+    } catch (error: any) {
+      console.error("Stripe subscription error:", error);
+      return res.status(400).json({ error: { message: error.message } });
+    }
+  });
+
   // User preferences
   app.get('/api/preferences', isAuthenticated, async (req: any, res) => {
     try {
@@ -122,20 +202,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Meal suggestions
+  // Meal suggestions with credit deduction
   app.post('/api/meals/suggestions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || user.subscriptionStatus !== 'active') {
-        return res.status(403).json({ message: "Active subscription required" });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
 
       const { proteinPreferences = [], cuisinePreferences = [], count = 6 } = req.body;
       
       if (!Array.isArray(proteinPreferences) || !Array.isArray(cuisinePreferences)) {
         return res.status(400).json({ message: "Invalid preferences format" });
+      }
+
+      // Check if user has sufficient meal credits (trial or subscription)
+      if (user.mealCredits < count) {
+        return res.status(402).json({ 
+          message: "Insufficient meal credits",
+          creditsAvailable: user.mealCredits,
+          creditsRequired: count,
+          redirectTo: "/subscribe"
+        });
       }
 
       const suggestions = await generateMealSuggestions(
@@ -170,6 +260,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         })
       );
+
+      // Deduct meal credits for successful generation
+      for (let i = 0; i < count; i++) {
+        await storage.deductMealCredit(userId);
+      }
 
       res.json(savedMeals.filter(Boolean));
     } catch (error) {
