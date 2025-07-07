@@ -157,7 +157,7 @@ export default function Landing() {
               Watch Demo
             </Button>
           </div>
-          <p className="text-green-200 mt-4">No credit card required • 7-day free trial</p>
+          <p className="text-green-200 mt-4">No credit card required • 10 free meals</p>
         </div>
       </section>
 
