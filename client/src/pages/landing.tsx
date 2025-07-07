@@ -373,30 +373,38 @@ export default function Landing() {
       <section id="pricing" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-xl text-gray-600">Choose the plan that fits your meal planning needs</p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Meal-Based Pricing</h2>
+            <p className="text-xl text-gray-600">Start with 10 free meals, then choose your plan</p>
+            <div className="mt-6 inline-flex items-center px-4 py-2 bg-orange-100 rounded-full">
+              <span className="text-orange-700 font-medium">🎉 10 FREE trial meals for new users - no credit card required!</span>
+            </div>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <Card className="p-8 hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
                 <h3 className="text-xl font-semibold mb-4">Basic</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$9</span>
+                <div className="mb-2">
+                  <span className="text-4xl font-bold">$10</span>
                   <span className="text-gray-600">/month</span>
                 </div>
+                <div className="text-sm text-gray-500 mb-6">20 meals • $0.50 per meal</div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Up to 5 meals per week</span>
+                    <span>20 AI-generated meals per month</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Basic AI meal suggestions</span>
+                    <span>Family-sized recipes (serves 4)</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
                     <span>Automated grocery lists</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="w-5 h-5 text-primary mr-3" />
+                    <span>Healthy oil requirements (EVOO only)</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
@@ -414,19 +422,20 @@ export default function Landing() {
                 <span className="bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">Most Popular</span>
               </div>
               <CardContent className="pt-6">
-                <h3 className="text-xl font-semibold mb-4">Pro</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$19</span>
+                <h3 className="text-xl font-semibold mb-4">Standard</h3>
+                <div className="mb-2">
+                  <span className="text-4xl font-bold">$20</span>
                   <span className="text-gray-600">/month</span>
                 </div>
+                <div className="text-sm text-gray-500 mb-6">40 meals • $0.50 per meal</div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Up to 10 meals per week</span>
+                    <span>40 AI-generated meals per month</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Advanced AI with GROK integration</span>
+                    <span>Family-sized recipes (serves 4)</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
@@ -434,7 +443,7 @@ export default function Landing() {
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Nutritional information</span>
+                    <span>Healthy oil requirements (EVOO only)</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
@@ -450,26 +459,27 @@ export default function Landing() {
             <Card className="p-8 hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
                 <h3 className="text-xl font-semibold mb-4">Premium</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$29</span>
+                <div className="mb-2">
+                  <span className="text-4xl font-bold">$30</span>
                   <span className="text-gray-600">/month</span>
                 </div>
+                <div className="text-sm text-gray-500 mb-6">60 meals • $0.50 per meal</div>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Unlimited meals per week</span>
+                    <span>60 AI-generated meals per month</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Custom dietary restrictions</span>
+                    <span>Family-sized recipes (serves 4)</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Meal planning calendar</span>
+                    <span>Advanced meal customization</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
-                    <span>Shopping list sharing</span>
+                    <span>Premium grocery list features</span>
                   </li>
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-primary mr-3" />
