@@ -59,6 +59,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
 
+  // Helper function to get user ID from session or auth
+  const getUserId = (req: any) => {
+    if (req.session?.adminUser) {
+      return req.session.adminUser.id;
+    }
+    return req.user?.claims?.sub;
+  };
+
+  // Custom auth middleware that supports admin sessions
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (req.session?.adminUser) {
+      return next(); // Admin session is valid
+    }
+    return isAuthenticated(req, res, next); // Use regular auth
+  };
+
   // Auth routes
   app.get('/api/auth/user', async (req: any, res) => {
     try {
@@ -82,9 +98,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription management
-  app.post('/api/get-or-create-subscription', isAuthenticated, async (req: any, res) => {
+  app.post('/api/get-or-create-subscription', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -140,8 +156,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create meal-based subscription
-  app.post('/api/create-subscription', isAuthenticated, async (req: any, res) => {
-    const userId = req.user.claims.sub;
+  app.post('/api/create-subscription', requireAuth, async (req: any, res) => {
+    const userId = getUserId(req);
     const { planId } = req.body;
     
     let user = await storage.getUser(userId);
@@ -220,9 +236,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User preferences
-  app.get('/api/preferences', isAuthenticated, async (req: any, res) => {
+  app.get('/api/preferences', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const preferences = await storage.getUserPreferences(userId);
       res.json(preferences || { proteinPreferences: [], cuisinePreferences: [], dietaryRestrictions: [] });
     } catch (error) {
@@ -231,9 +247,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/preferences', isAuthenticated, async (req: any, res) => {
+  app.post('/api/preferences', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const validated = insertUserPreferencesSchema.parse({
         ...req.body,
         userId
@@ -248,9 +264,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Meal suggestions with credit deduction
-  app.post('/api/meals/suggestions', isAuthenticated, async (req: any, res) => {
+  app.post('/api/meals/suggestions', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -263,8 +279,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid preferences format" });
       }
 
-      // Check if user has sufficient meal credits (trial or subscription)
-      if (user.mealCredits < count) {
+      // Skip credit check for admin users
+      if (user.id !== 'admin-master' && user.mealCredits < count) {
         return res.status(402).json({ 
           message: "Insufficient meal credits",
           creditsAvailable: user.mealCredits,
@@ -306,9 +322,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
 
-      // Deduct meal credits for successful generation
-      for (let i = 0; i < count; i++) {
-        await storage.deductMealCredit(userId);
+      // Deduct meal credits for successful generation (skip for admin)
+      if (user.id !== 'admin-master') {
+        for (let i = 0; i < count; i++) {
+          await storage.deductMealCredit(userId);
+        }
       }
 
       res.json(savedMeals.filter(Boolean));
@@ -319,9 +337,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Meal selections
-  app.get('/api/meal-selections/:weekStart', isAuthenticated, async (req: any, res) => {
+  app.get('/api/meal-selections/:weekStart', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const weekStartDate = new Date(req.params.weekStart);
       
       const selections = await storage.getUserMealSelections(userId, weekStartDate);
@@ -332,9 +350,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/meal-selections', isAuthenticated, async (req: any, res) => {
+  app.post('/api/meal-selections', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const validated = insertUserMealSelectionSchema.parse({
         ...req.body,
         userId
@@ -348,9 +366,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/meal-selections/:mealId/:weekStart', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/meal-selections/:mealId/:weekStart', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const mealId = parseInt(req.params.mealId);
       const weekStartDate = new Date(req.params.weekStart);
       
@@ -363,12 +381,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Grocery list generation
-  app.post('/api/grocery-list/generate', isAuthenticated, async (req: any, res) => {
+  app.post('/api/grocery-list/generate', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const user = await storage.getUser(userId);
       
-      if (!user || user.subscriptionStatus !== 'active') {
+      if (!user || (user.subscriptionStatus !== 'active' && user.id !== 'admin-master')) {
         return res.status(403).json({ message: "Active subscription required" });
       }
 
@@ -418,9 +436,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/grocery-list/:weekStart', isAuthenticated, async (req: any, res) => {
+  app.get('/api/grocery-list/:weekStart', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const weekStartDate = new Date(req.params.weekStart);
       
       const groceryList = await storage.getGroceryList(userId, weekStartDate);
@@ -432,9 +450,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Favorites routes
-  app.get('/api/favorites', isAuthenticated, async (req: any, res) => {
+  app.get('/api/favorites', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const favorites = await storage.getUserFavorites(userId);
       res.json(favorites);
     } catch (error) {
@@ -443,9 +461,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/favorites/:mealId', isAuthenticated, async (req: any, res) => {
+  app.post('/api/favorites/:mealId', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const mealId = parseInt(req.params.mealId);
       const favorite = await storage.addToFavorites(userId, mealId);
       res.json(favorite);
@@ -455,9 +473,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/favorites/:mealId', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/favorites/:mealId', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const mealId = parseInt(req.params.mealId);
       await storage.removeFromFavorites(userId, mealId);
       res.json({ success: true });
@@ -468,9 +486,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Calendar routes
-  app.get('/api/calendar', isAuthenticated, async (req: any, res) => {
+  app.get('/api/calendar', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const startDate = new Date(req.query.startDate as string);
       const endDate = new Date(req.query.endDate as string);
       const calendarMeals = await storage.getCalendarMeals(userId, startDate, endDate);
@@ -481,9 +499,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/calendar', isAuthenticated, async (req: any, res) => {
+  app.post('/api/calendar', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const { mealId, scheduledDate, mealType } = req.body;
       const calendarEntry = await storage.addToCalendar({
         userId,
@@ -498,9 +516,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/calendar', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/calendar', requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = getUserId(req);
       const { scheduledDate, mealType } = req.query;
       await storage.removeFromCalendar(userId, new Date(scheduledDate as string), mealType as string);
       res.json({ success: true });
