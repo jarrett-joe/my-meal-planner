@@ -59,6 +59,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
 
+  // Create unlimited user endpoint (admin only)
+  app.post('/api/admin/create-unlimited-user', async (req: any, res) => {
+    try {
+      // Check admin session
+      if (!req.session?.adminUser) {
+        return res.status(401).json({ message: "Admin access required" });
+      }
+
+      const { userId, email, firstName, lastName } = req.body;
+      
+      if (!userId || !email) {
+        return res.status(400).json({ message: "User ID and email are required" });
+      }
+
+      // Create or update user with unlimited credits
+      const unlimitedUser = await storage.upsertUser({
+        id: userId,
+        email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        profileImageUrl: null,
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        subscriptionStatus: "premium", // Give premium status
+        subscriptionPlan: "unlimited",
+        mealCredits: 999999, // Virtually unlimited
+        totalMealsUsed: 0,
+      });
+
+      res.json({ 
+        success: true, 
+        user: unlimitedUser,
+        message: `User ${userId} created with unlimited credits` 
+      });
+    } catch (error) {
+      console.error("Error creating unlimited user:", error);
+      res.status(500).json({ message: "Failed to create unlimited user" });
+    }
+  });
+
   // Helper function to get user ID from session or auth
   const getUserId = (req: any) => {
     if (req.session?.adminUser) {
@@ -279,8 +319,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid preferences format" });
       }
 
-      // Skip credit check for admin users
-      if (user.id !== 'admin-master' && user.mealCredits < count) {
+      // Skip credit check for admin users and unlimited users
+      if (user.id !== 'admin-master' && user.subscriptionPlan !== 'unlimited' && user.mealCredits < count) {
         return res.status(402).json({ 
           message: "Insufficient meal credits",
           creditsAvailable: user.mealCredits,
@@ -322,8 +362,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
 
-      // Deduct meal credits for successful generation (skip for admin)
-      if (user.id !== 'admin-master') {
+      // Deduct meal credits for successful generation (skip for admin and unlimited users)
+      if (user.id !== 'admin-master' && user.subscriptionPlan !== 'unlimited') {
         for (let i = 0; i < count; i++) {
           await storage.deductMealCredit(userId);
         }
@@ -386,7 +426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = getUserId(req);
       const user = await storage.getUser(userId);
       
-      if (!user || (user.subscriptionStatus !== 'active' && user.id !== 'admin-master')) {
+      if (!user || (user.subscriptionStatus !== 'active' && user.id !== 'admin-master' && user.subscriptionPlan !== 'unlimited')) {
         return res.status(403).json({ message: "Active subscription required" });
       }
 

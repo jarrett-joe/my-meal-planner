@@ -152,18 +152,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUserPreferences(preferences: InsertUserPreferences): Promise<UserPreferences> {
-    const [result] = await db
-      .insert(userPreferences)
-      .values(preferences)
-      .onConflictDoUpdate({
-        target: userPreferences.userId,
-        set: {
+    // First try to find existing preferences
+    const existing = await this.getUserPreferences(preferences.userId);
+    
+    if (existing) {
+      // Update existing preferences
+      const [result] = await db
+        .update(userPreferences)
+        .set({
           ...preferences,
           updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return result;
+        })
+        .where(eq(userPreferences.userId, preferences.userId))
+        .returning();
+      return result;
+    } else {
+      // Insert new preferences
+      const [result] = await db
+        .insert(userPreferences)
+        .values(preferences)
+        .returning();
+      return result;
+    }
   }
 
   // Meals

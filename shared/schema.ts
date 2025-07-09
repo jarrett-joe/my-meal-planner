@@ -46,7 +46,7 @@ export const users = pgTable("users", {
 // User preferences for meal planning
 export const userPreferences = pgTable("user_preferences", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   proteinPreferences: jsonb("protein_preferences").$type<string[]>().default([]),
   cuisinePreferences: jsonb("cuisine_preferences").$type<string[]>().default([]),
   dietaryRestrictions: jsonb("dietary_restrictions").$type<string[]>().default([]),
