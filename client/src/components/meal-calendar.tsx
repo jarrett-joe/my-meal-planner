@@ -33,7 +33,7 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
 
   // Fetch calendar meals for the current month
   const { data: calendarMeals = [], isLoading } = useQuery({
-    queryKey: ["/api/calendar", monthStart.toISOString(), monthEnd.toISOString()],
+    queryKey: ["/api/calendar", monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]],
     queryFn: async () => {
       const response = await apiRequest("GET", `/api/calendar?startDate=${monthStart.toISOString().split('T')[0]}&endDate=${monthEnd.toISOString().split('T')[0]}`, {});
       return response.json();

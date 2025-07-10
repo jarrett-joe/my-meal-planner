@@ -37,8 +37,9 @@ export function AddToCalendarModal({ meal, open, onOpenChange }: AddToCalendarMo
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all calendar-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar", selectedDate] });
+      queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
       onOpenChange(false);
       setSelectedDate("");
       setSelectedMealType("dinner");

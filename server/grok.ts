@@ -171,7 +171,7 @@ IMPORTANT REQUIREMENTS:
 - Combine similar ingredients and provide reasonable quantities for a family of 4
 - Remove duplicates and group similar items together
 
-Respond with a JSON array in this exact format:
+CRITICAL: You must respond with a valid JSON array in this EXACT format (no other text or explanation):
 [
   {
     "category": "Proteins",
@@ -185,7 +185,9 @@ Respond with a JSON array in this exact format:
     "category": "Vegetables", 
     "items": ["2 tomatoes", "1 cucumber", "1 red onion"]
   }
-]`;
+]
+
+Do not include any other text before or after the JSON array.`;
 
     const response = await openai.chat.completions.create({
       model: "grok-2-1212",
@@ -199,7 +201,6 @@ Respond with a JSON array in this exact format:
           content: prompt
         }
       ],
-      response_format: { type: "json_object" },
       temperature: 0.3,
     });
 
@@ -223,8 +224,26 @@ Respond with a JSON array in this exact format:
       groceryList = parsed.groceryList;
     } else if (parsed.categories && Array.isArray(parsed.categories)) {
       groceryList = parsed.categories;
+    } else if (parsed.list && Array.isArray(parsed.list)) {
+      groceryList = parsed.list;
+    } else if (parsed.items && Array.isArray(parsed.items)) {
+      groceryList = parsed.items;
     } else {
-      throw new Error("Unexpected response format from AI API");
+      console.log("Unexpected parsed response:", JSON.stringify(parsed, null, 2));
+      // Try to extract any array-like structure
+      const values = Object.values(parsed);
+      const arrayValue = values.find(value => Array.isArray(value));
+      if (arrayValue && Array.isArray(arrayValue)) {
+        groceryList = arrayValue as {category: string, items: string[]}[];
+      } else {
+        // If we still can't parse it, create a fallback structure
+        groceryList = [
+          {
+            category: "Items",
+            items: typeof parsed === 'string' ? [parsed] : Object.values(parsed).filter(v => typeof v === 'string') as string[]
+          }
+        ];
+      }
     }
 
     return groceryList.filter(category => 
