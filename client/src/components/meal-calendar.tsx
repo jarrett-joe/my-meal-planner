@@ -38,8 +38,11 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
     queryFn: async () => {
       const startDateStr = format(monthStart, 'yyyy-MM-dd');
       const endDateStr = format(monthEnd, 'yyyy-MM-dd');
+      console.log('Fetching calendar data for:', startDateStr, 'to', endDateStr);
       const response = await apiRequest("GET", `/api/calendar?startDate=${startDateStr}&endDate=${endDateStr}`, {});
-      return response.json();
+      const data = await response.json();
+      console.log('Calendar data received:', data);
+      return data;
     },
   });
 
@@ -57,15 +60,21 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
       });
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate all calendar queries
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
-      // Specifically refetch the current month's data
-      queryClient.refetchQueries({ 
-        queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')] 
-      });
+    onSuccess: (data) => {
+      console.log('Calendar addition successful:', data);
       setSelectedDate(null);
       setDialogOpen(false);
+      
+      // Add a small delay to ensure database consistency
+      setTimeout(() => {
+        // Invalidate all calendar queries
+        queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
+        // Force refetch the current query
+        queryClient.refetchQueries({
+          predicate: (query) => query.queryKey[0] === "/api/calendar"
+        });
+      }, 100);
+      
       toast({
         title: "Success",
         description: "Meal added to calendar",
@@ -85,12 +94,18 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
       await apiRequest("DELETE", `/api/calendar?scheduledDate=${date.toISOString().split('T')[0]}&mealType=${mealType}`, {});
     },
     onSuccess: () => {
-      // Invalidate all calendar queries
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
-      // Specifically refetch the current month's data
-      queryClient.refetchQueries({ 
-        queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')] 
-      });
+      console.log('Calendar removal successful');
+      
+      // Add a small delay to ensure database consistency
+      setTimeout(() => {
+        // Invalidate all calendar queries
+        queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
+        // Force refetch all calendar queries
+        queryClient.refetchQueries({
+          predicate: (query) => query.queryKey[0] === "/api/calendar"
+        });
+      }, 100);
+      
       toast({
         title: "Success",
         description: "Meal removed from calendar",
