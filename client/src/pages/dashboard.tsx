@@ -13,6 +13,7 @@ import { GroceryListModal } from "@/components/grocery-list-modal";
 import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard, Heart, Calendar, LogOut } from "lucide-react";
 import { Link } from "wouter";
 import { MealCalendar } from "@/components/meal-calendar";
+import { AddToCalendarModal } from "@/components/add-to-calendar-modal";
 import type { Meal, UserPreferences } from "@shared/schema";
 
 function getWeekStart(): Date {
@@ -31,6 +32,8 @@ export default function Dashboard() {
   const [showGroceryList, setShowGroceryList] = useState(false);
   const [weekStartDate] = useState(getWeekStart());
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showAddToCalendar, setShowAddToCalendar] = useState(false);
+  const [selectedMealForCalendar, setSelectedMealForCalendar] = useState<Meal | null>(null);
 
   // Fetch user preferences
   const { data: preferences, isLoading: preferencesLoading } = useQuery({
@@ -193,11 +196,8 @@ export default function Dashboard() {
   };
 
   const handleAddToCalendar = (meal: Meal) => {
-    toast({
-      title: "Calendar Feature",
-      description: "Click the calendar tab to plan your meals for specific dates!",
-    });
-    setShowCalendar(true);
+    setSelectedMealForCalendar(meal);
+    setShowAddToCalendar(true);
   };
 
   const handleAdminLogout = async () => {
@@ -448,6 +448,13 @@ export default function Dashboard() {
         open={showGroceryList}
         onOpenChange={setShowGroceryList}
         weekStartDate={weekStartDate}
+      />
+
+      {/* Add to Calendar Modal */}
+      <AddToCalendarModal
+        meal={selectedMealForCalendar}
+        open={showAddToCalendar}
+        onOpenChange={setShowAddToCalendar}
       />
     </div>
   );

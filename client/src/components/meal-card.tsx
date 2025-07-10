@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { MealDetailModal } from "./meal-detail-modal";
 
 interface MealCardProps {
   meal: Meal;
@@ -27,6 +28,7 @@ export function MealCard({
 }: MealCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const favoriteMutation = useMutation({
     mutationFn: async (isFav: boolean) => {
@@ -62,13 +64,19 @@ export function MealCard({
       onAddToCalendar(meal);
     }
   };
+
+  const handleCardClick = () => {
+    setShowDetailModal(true);
+  };
+
   return (
-    <Card 
-      className={`cursor-pointer transition-all hover:shadow-lg ${
-        selected ? 'border-primary bg-primary/5' : ''
-      }`}
-      onClick={onToggle}
-    >
+    <>
+      <Card 
+        className={`cursor-pointer transition-all hover:shadow-lg ${
+          selected ? 'border-primary bg-primary/5' : ''
+        }`}
+        onClick={handleCardClick}
+      >
       {selected && (
         <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-2">
           <Check className="w-4 h-4" />
@@ -121,6 +129,19 @@ export function MealCard({
           <Button
             variant="ghost"
             size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+            className="flex-1 text-xs"
+          >
+            <Check className="w-4 h-4 mr-1" />
+            {selected ? 'Selected' : 'Select'}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleFavoriteClick}
             disabled={favoriteMutation.isPending}
             className="flex-1 text-xs"
@@ -145,5 +166,14 @@ export function MealCard({
         </div>
       </CardContent>
     </Card>
+
+    <MealDetailModal
+      meal={meal}
+      open={showDetailModal}
+      onOpenChange={setShowDetailModal}
+      isFavorite={isFavorite}
+      onAddToCalendar={onAddToCalendar}
+    />
+    </>
   );
 }
