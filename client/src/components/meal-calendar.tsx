@@ -25,6 +25,7 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<string>("dinner");
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -57,9 +58,14 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all calendar queries
       queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
-      queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
+      // Specifically refetch the current month's data
+      queryClient.refetchQueries({ 
+        queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')] 
+      });
       setSelectedDate(null);
+      setDialogOpen(false);
       toast({
         title: "Success",
         description: "Meal added to calendar",
@@ -79,8 +85,12 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
       await apiRequest("DELETE", `/api/calendar?scheduledDate=${date.toISOString().split('T')[0]}&mealType=${mealType}`, {});
     },
     onSuccess: () => {
+      // Invalidate all calendar queries
       queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
-      queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
+      // Specifically refetch the current month's data
+      queryClient.refetchQueries({ 
+        queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')] 
+      });
       toast({
         title: "Success",
         description: "Meal removed from calendar",
@@ -116,6 +126,7 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
 
   const handleAddMeal = (mealId: number) => {
     if (selectedDate) {
+      console.log('Adding meal to calendar:', { mealId, date: selectedDate, mealType: selectedMealType });
       addToCalendarMutation.mutate({
         mealId,
         date: selectedDate,
@@ -197,13 +208,22 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
                 </div>
                 
                 {/* Add meal button */}
-                <Dialog>
+                <Dialog open={dialogOpen && isSameDay(selectedDate || new Date(), day.date)} onOpenChange={(open) => {
+                  setDialogOpen(open);
+                  if (!open) {
+                    setSelectedDate(null);
+                    setSelectedMealType("dinner");
+                  }
+                }}>
                   <DialogTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="w-full mt-1 opacity-0 hover:opacity-100 transition-opacity"
-                      onClick={() => setSelectedDate(day.date)}
+                      onClick={() => {
+                        setSelectedDate(day.date);
+                        setDialogOpen(true);
+                      }}
                     >
                       <Plus className="w-3 h-3" />
                     </Button>
