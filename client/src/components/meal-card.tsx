@@ -69,44 +69,13 @@ export function MealCard({
       }`}
       onClick={onToggle}
     >
-      <div className="relative">
-        <div className="w-full h-48 bg-gray-200 rounded-t-lg overflow-hidden">
-          {meal.imageUrl ? (
-            <img 
-              src={meal.imageUrl} 
-              alt={meal.title}
-              className="w-full h-full object-cover rounded-t-lg transition-transform hover:scale-105"
-              onError={(e) => {
-                const img = e.target as HTMLImageElement;
-                img.style.display = 'none';
-                const fallback = img.nextElementSibling as HTMLElement;
-                if (fallback) fallback.style.display = 'flex';
-              }}
-            />
-          ) : null}
-          <div 
-            className={`w-full h-full flex items-center justify-center text-gray-400 text-center ${meal.imageUrl ? 'hidden' : 'flex'}`}
-            style={{ display: meal.imageUrl ? 'none' : 'flex' }}
-          >
-            <div>
-              <div className="text-4xl mb-2">🍽️</div>
-              <div className="text-sm">High-quality recipe photo</div>
-              {meal.imageDescription && (
-                <div className="text-xs mt-1 px-2 text-gray-500 line-clamp-2">
-                  {meal.imageDescription}
-                </div>
-              )}
-            </div>
-          </div>
+      {selected && (
+        <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-2">
+          <Check className="w-4 h-4" />
         </div>
-        {selected && (
-          <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-2">
-            <Check className="w-4 h-4" />
-          </div>
-        )}
-      </div>
-      <CardContent className="p-4">
-        <h5 className="font-semibold text-gray-900 mb-2 line-clamp-2">{meal.title}</h5>
+      )}
+      <CardContent className="p-6">
+        <h3 className="font-bold text-2xl text-gray-900 dark:text-gray-100 mb-3 line-clamp-2">{meal.title}</h3>
         
         <div className="flex flex-wrap gap-1 mb-3">
           {meal.cuisine && (
