@@ -476,12 +476,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/grocery-list/:weekStart', requireAuth, async (req: any, res) => {
+  app.get('/api/grocery-list', requireAuth, async (req: any, res) => {
     try {
       const userId = getUserId(req);
-      const weekStartDate = new Date(req.params.weekStart);
+      const weekStartDate = req.query.weekStartDate ? new Date(req.query.weekStartDate as string) : new Date();
       
       const groceryList = await storage.getGroceryList(userId, weekStartDate);
+      if (!groceryList) {
+        return res.json({ ingredients: [] });
+      }
       res.json(groceryList);
     } catch (error) {
       console.error("Error fetching grocery list:", error);

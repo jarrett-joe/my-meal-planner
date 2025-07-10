@@ -9,7 +9,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Meal, MealCalendar } from "@shared/schema";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 
 interface MealCalendarProps {
   onMealSelect?: (meal: Meal) => void;
@@ -22,7 +22,7 @@ interface CalendarDay {
 }
 
 export function MealCalendar({ onMealSelect }: MealCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1)); // July 2025 (month is 0-indexed)
+  const [currentDate, setCurrentDate] = useState(new Date()); // Current date
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<string>("dinner");
   const { toast } = useToast();
@@ -95,10 +95,13 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
     },
   });
 
-  // Create calendar days with meals
+  // Create calendar days with meals (include previous/next month days to fill grid)
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
+  
   const calendarDays: CalendarDay[] = eachDayOfInterval({
-    start: monthStart,
-    end: monthEnd,
+    start: calendarStart,
+    end: calendarEnd,
   }).map(date => ({
     date,
     meals: calendarMeals.filter((cm: any) => {

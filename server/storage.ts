@@ -22,7 +22,7 @@ import {
   type InsertMealCalendar,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -236,13 +236,16 @@ export class DatabaseStorage implements IStorage {
 
   // Grocery lists
   async getGroceryList(userId: string, weekStartDate: Date): Promise<GroceryList | undefined> {
+    // Convert to date string for comparison to handle timezone issues
+    const dateStr = weekStartDate.toISOString().split('T')[0];
+    
     const [groceryList] = await db
       .select()
       .from(groceryLists)
       .where(
         and(
           eq(groceryLists.userId, userId),
-          eq(groceryLists.weekStartDate, weekStartDate)
+          sql`DATE(${groceryLists.weekStartDate}) = ${dateStr}`
         )
       );
     return groceryList;

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Download, Share, ShoppingCart, Loader2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import type { GroceryList } from "@shared/schema";
 
 interface GroceryListModalProps {
@@ -14,6 +15,10 @@ interface GroceryListModalProps {
 export function GroceryListModal({ open, onOpenChange, weekStartDate }: GroceryListModalProps) {
   const { data: groceryList, isLoading } = useQuery({
     queryKey: ["/api/grocery-list", weekStartDate.toISOString().split('T')[0]],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/grocery-list?weekStartDate=${weekStartDate.toISOString().split('T')[0]}`, {});
+      return response.json();
+    },
     enabled: open,
   });
 
