@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { MealDetailModal } from "@/components/meal-detail-modal";
 import type { Meal, MealCalendar } from "@shared/schema";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 
@@ -26,6 +27,8 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<string>("dinner");
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [mealDetailOpen, setMealDetailOpen] = useState<boolean>(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -65,15 +68,9 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
       setSelectedDate(null);
       setDialogOpen(false);
       
-      // Add a small delay to ensure database consistency
-      setTimeout(() => {
-        // Invalidate all calendar queries
-        queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
-        // Force refetch the current query
-        queryClient.refetchQueries({
-          predicate: (query) => query.queryKey[0] === "/api/calendar"
-        });
-      }, 100);
+      // Immediately invalidate and refetch queries
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
+      queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
       
       toast({
         title: "Success",
@@ -96,15 +93,9 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
     onSuccess: () => {
       console.log('Calendar removal successful');
       
-      // Add a small delay to ensure database consistency
-      setTimeout(() => {
-        // Invalidate all calendar queries
-        queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
-        // Force refetch all calendar queries
-        queryClient.refetchQueries({
-          predicate: (query) => query.queryKey[0] === "/api/calendar"
-        });
-      }, 100);
+      // Immediately invalidate and refetch queries
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
+      queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
       
       toast({
         title: "Success",
@@ -154,12 +145,27 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
     removeFromCalendarMutation.mutate({ date, mealType });
   };
 
+  const handleMealClick = (meal: Meal) => {
+    setSelectedMeal(meal);
+    setMealDetailOpen(true);
+    onMealSelect?.(meal);
+  };
+
+  const handleRefreshCalendar = () => {
+    console.log('Manually refreshing calendar...');
+    queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
+    queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Meal Calendar</CardTitle>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleRefreshCalendar} title="Refresh Calendar">
+              <RefreshCw className="w-4 h-4" />
+            </Button>
             <Button variant="outline" size="sm" onClick={handlePrevMonth}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -206,7 +212,7 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
                       <Badge
                         variant="secondary"
                         className="text-xs block truncate cursor-pointer hover:bg-primary hover:text-white"
-                        onClick={() => onMealSelect?.(calendarMeal.meal)}
+                        onClick={() => handleMealClick(calendarMeal.meal)}
                       >
                         {calendarMeal.mealType}: {calendarMeal.meal.title}
                       </Badge>
@@ -296,6 +302,13 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
           </div>
         )}
       </CardContent>
+      
+      {/* Meal Detail Modal */}
+      <MealDetailModal
+        meal={selectedMeal}
+        open={mealDetailOpen}
+        onOpenChange={setMealDetailOpen}
+      />
     </Card>
   );
 }
