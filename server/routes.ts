@@ -535,7 +535,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = getUserId(req);
       const startDate = new Date(req.query.startDate as string);
       const endDate = new Date(req.query.endDate as string);
+      
+      console.log(`Calendar GET request: userId=${userId}, startDate=${req.query.startDate}, endDate=${req.query.endDate}`);
+      
       const calendarMeals = await storage.getCalendarMeals(userId, startDate, endDate);
+      
+      console.log(`Calendar meals found: ${calendarMeals.length} meals for user ${userId}`);
+      console.log('Calendar meals data:', JSON.stringify(calendarMeals, null, 2));
+      
       res.json(calendarMeals);
     } catch (error) {
       console.error("Error fetching calendar meals:", error);
@@ -547,12 +554,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = getUserId(req);
       const { mealId, scheduledDate, mealType } = req.body;
+      
+      console.log(`Calendar POST request: userId=${userId}, mealId=${mealId}, scheduledDate=${scheduledDate}, mealType=${mealType}`);
+      
       const calendarEntry = await storage.addToCalendar({
         userId,
         mealId: parseInt(mealId),
         scheduledDate,
         mealType: mealType || 'dinner'
       });
+      
+      console.log('Calendar entry created:', JSON.stringify(calendarEntry, null, 2));
+      
       res.json(calendarEntry);
     } catch (error) {
       console.error("Error adding to calendar:", error);

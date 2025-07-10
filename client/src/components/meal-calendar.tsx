@@ -68,9 +68,17 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
       setSelectedDate(null);
       setDialogOpen(false);
       
-      // Immediately invalidate and refetch queries
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
-      queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
+      // Force immediate refetch with more specific invalidation
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/calendar"],
+        exact: false 
+      });
+      
+      // Also manually refetch the current month's data
+      queryClient.refetchQueries({ 
+        queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')],
+        exact: true 
+      });
       
       toast({
         title: "Success",
@@ -118,14 +126,22 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
   const calendarDays: CalendarDay[] = eachDayOfInterval({
     start: calendarStart,
     end: calendarEnd,
-  }).map(date => ({
-    date,
-    meals: calendarMeals.filter((cm: any) => {
+  }).map(date => {
+    const mealsForDay = calendarMeals.filter((cm: any) => {
       const mealDate = new Date(cm.scheduledDate + 'T00:00:00'); // Add time to avoid timezone issues
-      return isSameDay(mealDate, date);
-    }),
-    isCurrentMonth: isSameMonth(date, currentDate),
-  }));
+      const matches = isSameDay(mealDate, date);
+      if (matches) {
+        console.log(`Meal match found for ${format(date, 'yyyy-MM-dd')}:`, cm.meal?.title, cm.mealType);
+      }
+      return matches;
+    });
+    
+    return {
+      date,
+      meals: mealsForDay,
+      isCurrentMonth: isSameMonth(date, currentDate),
+    };
+  });
 
   const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
