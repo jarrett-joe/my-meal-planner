@@ -14,6 +14,7 @@ import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard, Heart, Calendar, 
 import { Link } from "wouter";
 import { MealCalendar } from "@/components/meal-calendar";
 import { AddToCalendarModal } from "@/components/add-to-calendar-modal";
+import { MealDetailModal } from "@/components/meal-detail-modal";
 import type { Meal, UserPreferences } from "@shared/schema";
 
 function getWeekStart(): Date {
@@ -34,6 +35,8 @@ export default function Dashboard() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showAddToCalendar, setShowAddToCalendar] = useState(false);
   const [selectedMealForCalendar, setSelectedMealForCalendar] = useState<Meal | null>(null);
+  const [showMealDetail, setShowMealDetail] = useState(false);
+  const [selectedMealForDetail, setSelectedMealForDetail] = useState<Meal | null>(null);
 
   // Fetch user preferences
   const { data: preferences, isLoading: preferencesLoading } = useQuery({
@@ -47,7 +50,7 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  // Fetch suggested meals
+  // Fetch suggested meals - disabled auto fetch, now manual only
   const { data: meals = [], isLoading: mealsLoading, refetch: refetchMeals, error: mealsError } = useQuery({
     queryKey: ["/api/meals", preferences],
     queryFn: async () => {
@@ -70,7 +73,7 @@ export default function Dashboard() {
         throw error;
       }
     },
-    enabled: !!user && !!preferences,
+    enabled: false, // Disable automatic fetching - now manual only
     retry: false,
   });
 
@@ -354,7 +357,7 @@ export default function Dashboard() {
                   disabled={mealsLoading}
                 >
                   <RefreshCw className={`w-4 h-4 mr-2 ${mealsLoading ? 'animate-spin' : ''}`} />
-                  Refresh Suggestions
+                  Search for Meals
                 </Button>
               </div>
             </CardHeader>
@@ -377,8 +380,16 @@ export default function Dashboard() {
                   <ChefHat className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No meal suggestions yet</h3>
                   <p className="text-gray-600 mb-4">
-                    Set your preferences above and click "Refresh Suggestions" to get AI-powered meal recommendations.
+                    Set your preferences above and click "Search for Meals" to get AI-powered meal recommendations.
                   </p>
+                  <Button 
+                    onClick={handleRefreshSuggestions}
+                    disabled={mealsLoading || (!preferences?.proteinPreferences?.length && !preferences?.cuisinePreferences?.length)}
+                    size="lg"
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${mealsLoading ? 'animate-spin' : ''}`} />
+                    Search for Meals
+                  </Button>
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -432,10 +443,8 @@ export default function Dashboard() {
             {showCalendar && (
               <CardContent>
                 <MealCalendar onMealSelect={(meal) => {
-                  toast({
-                    title: meal.title,
-                    description: meal.description,
-                  });
+                  setSelectedMealForDetail(meal);
+                  setShowMealDetail(true);
                 }} />
               </CardContent>
             )}
@@ -455,6 +464,15 @@ export default function Dashboard() {
         meal={selectedMealForCalendar}
         open={showAddToCalendar}
         onOpenChange={setShowAddToCalendar}
+      />
+
+      {/* Meal Detail Modal - For viewing recipes from calendar */}
+      <MealDetailModal
+        meal={selectedMealForDetail}
+        open={showMealDetail}
+        onOpenChange={setShowMealDetail}
+        isFavorite={favorites.some((fav: any) => fav.meal.id === selectedMealForDetail?.id)}
+        onAddToCalendar={handleAddToCalendar}
       />
     </div>
   );

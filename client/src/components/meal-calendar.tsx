@@ -56,6 +56,7 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
+      queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
       setSelectedDate(null);
       toast({
         title: "Success",
@@ -77,6 +78,7 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
+      queryClient.refetchQueries({ queryKey: ["/api/calendar"] });
       toast({
         title: "Success",
         description: "Meal removed from calendar",
