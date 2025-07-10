@@ -23,7 +23,7 @@ export interface MealSuggestion {
 export async function generateMealSuggestions(
   proteinPreferences: string[],
   cuisinePreferences: string[],
-  dietaryRestrictions: string[] = [],
+  allergyPreferences: string[] = [],
   count = 6
 ): Promise<MealSuggestion[]> {
   try {
@@ -38,7 +38,7 @@ Create ${count} original meal suggestions based on these preferences:
 
 Protein preferences: ${proteinPreferences.join(", ")}
 Cuisine preferences: ${cuisinePreferences.join(", ")}
-Dietary restrictions: ${dietaryRestrictions.length > 0 ? dietaryRestrictions.join(", ") : "None"}
+Allergy/Dietary restrictions: ${allergyPreferences.length > 0 ? allergyPreferences.join(", ") : "None"}
 
 STRICT REQUIREMENTS:
 - All meals must serve 4 people (adjust ingredient quantities accordingly)
@@ -46,6 +46,7 @@ STRICT REQUIREMENTS:
 - ONLY use Extra Virgin Olive Oil (EVOO) or Avocado Oil for any cooking fat
 - Create original recipes inspired by the cooking styles of the listed websites
 - Ensure variety in cooking methods and ingredients
+- Respect dietary restrictions and allergies: ${allergyPreferences.length > 0 ? `MUST avoid all ${allergyPreferences.join(", ")} ingredients and substitutions` : "No specific restrictions"}
 
 For each meal, provide:
 1. A creative and appetizing title

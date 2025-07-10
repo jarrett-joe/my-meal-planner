@@ -280,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = getUserId(req);
       const preferences = await storage.getUserPreferences(userId);
-      res.json(preferences || { proteinPreferences: [], cuisinePreferences: [], dietaryRestrictions: [] });
+      res.json(preferences || { proteinPreferences: [], cuisinePreferences: [], allergyPreferences: [] });
     } catch (error) {
       console.error("Error fetching preferences:", error);
       res.status(500).json({ message: "Failed to fetch preferences" });
@@ -313,11 +313,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      const { proteinPreferences = [], cuisinePreferences = [], count = 6 } = req.body;
-      
-      if (!Array.isArray(proteinPreferences) || !Array.isArray(cuisinePreferences)) {
-        return res.status(400).json({ message: "Invalid preferences format" });
-      }
+      // Get preferences from user's stored preferences, not request body
+      const preferences = await storage.getUserPreferences(userId);
+      const proteinPreferences = preferences?.proteinPreferences || [];
+      const cuisinePreferences = preferences?.cuisinePreferences || [];
+      const allergyPreferences = preferences?.allergyPreferences || [];
+      const count = req.body.count || 6;
 
       // Skip credit check for admin users and unlimited users
       if (user.id !== 'admin-master' && user.subscriptionPlan !== 'unlimited' && user.mealCredits < count) {
@@ -332,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const suggestions = await generateMealSuggestions(
         proteinPreferences,
         cuisinePreferences,
-        [],
+        allergyPreferences,
         count
       );
 

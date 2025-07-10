@@ -60,8 +60,6 @@ export default function Dashboard() {
       
       try {
         const response = await apiRequest("POST", "/api/meals/suggestions", {
-          proteinPreferences: preferences.proteinPreferences || [],
-          cuisinePreferences: preferences.cuisinePreferences || [],
           count: 8
         });
         return response.json();
@@ -140,7 +138,7 @@ export default function Dashboard() {
     },
   });
 
-  const handlePreferencesChange = (type: 'protein' | 'cuisine', values: string[]) => {
+  const handlePreferencesChange = (type: 'protein' | 'cuisine' | 'allergy', values: string[]) => {
     const updates = {
       ...preferences,
       [`${type}Preferences`]: values,
@@ -326,19 +324,28 @@ export default function Dashboard() {
                   <div className="h-8 bg-gray-200 rounded"></div>
                 </div>
               ) : (
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <PreferenceChips
+                      title="Protein Preferences"
+                      options={["Chicken", "Beef", "Fish", "Vegetarian", "Pork", "Tofu"]}
+                      selected={preferences?.proteinPreferences || []}
+                      onChange={(values) => handlePreferencesChange('protein', values)}
+                      loading={updatePreferencesMutation.isPending}
+                    />
+                    <PreferenceChips
+                      title="Cuisine Types"
+                      options={["Italian", "Mexican", "Mediterranean", "Asian", "American", "Indian", "French"]}
+                      selected={preferences?.cuisinePreferences || []}
+                      onChange={(values) => handlePreferencesChange('cuisine', values)}
+                      loading={updatePreferencesMutation.isPending}
+                    />
+                  </div>
                   <PreferenceChips
-                    title="Protein Preferences"
-                    options={["Chicken", "Beef", "Fish", "Vegetarian", "Pork", "Tofu"]}
-                    selected={preferences?.proteinPreferences || []}
-                    onChange={(values) => handlePreferencesChange('protein', values)}
-                    loading={updatePreferencesMutation.isPending}
-                  />
-                  <PreferenceChips
-                    title="Cuisine Types"
-                    options={["Italian", "Mexican", "Mediterranean", "Asian", "American", "Indian", "French"]}
-                    selected={preferences?.cuisinePreferences || []}
-                    onChange={(values) => handlePreferencesChange('cuisine', values)}
+                    title="Allergy & Dietary Restrictions"
+                    options={["Gluten-Free", "Dairy-Free", "Egg-Free", "Soy-Free", "Nut-Free", "Vegan", "Keto", "Low-Carb"]}
+                    selected={preferences?.allergyPreferences || []}
+                    onChange={(values) => handlePreferencesChange('allergy', values)}
                     loading={updatePreferencesMutation.isPending}
                   />
                 </div>

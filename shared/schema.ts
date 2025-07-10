@@ -49,7 +49,7 @@ export const userPreferences = pgTable("user_preferences", {
   userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   proteinPreferences: jsonb("protein_preferences").$type<string[]>().default([]),
   cuisinePreferences: jsonb("cuisine_preferences").$type<string[]>().default([]),
-  dietaryRestrictions: jsonb("dietary_restrictions").$type<string[]>().default([]),
+  allergyPreferences: jsonb("allergy_preferences").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
