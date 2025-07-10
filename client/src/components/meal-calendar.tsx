@@ -23,7 +23,7 @@ interface CalendarDay {
 }
 
 export function MealCalendar({ onMealSelect }: MealCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date()); // Current date
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1)); // Start at July 2025 to match the data
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<string>("dinner");
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -36,16 +36,22 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
   const monthEnd = endOfMonth(currentDate);
 
   // Fetch calendar meals for the current month
-  const { data: calendarMeals = [], isLoading } = useQuery({
+  const { data: calendarMeals = [], isLoading, error } = useQuery({
     queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')],
     queryFn: async () => {
       const startDateStr = format(monthStart, 'yyyy-MM-dd');
       const endDateStr = format(monthEnd, 'yyyy-MM-dd');
       console.log('Fetching calendar data for:', startDateStr, 'to', endDateStr);
-      const response = await apiRequest("GET", `/api/calendar?startDate=${startDateStr}&endDate=${endDateStr}`, {});
-      const data = await response.json();
-      console.log('Calendar data received:', data);
-      return data;
+      try {
+        const response = await apiRequest("GET", `/api/calendar?startDate=${startDateStr}&endDate=${endDateStr}`, {});
+        const data = await response.json();
+        console.log('Calendar data received:', data);
+        console.log('Calendar meals count:', data.length);
+        return data;
+      } catch (error) {
+        console.error('Calendar fetch error:', error);
+        throw error;
+      }
     },
   });
 
