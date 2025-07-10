@@ -249,17 +249,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertGroceryList(groceryListData: InsertGroceryList): Promise<GroceryList> {
-    const [result] = await db
-      .insert(groceryLists)
-      .values(groceryListData)
-      .onConflictDoUpdate({
-        target: [groceryLists.userId, groceryLists.weekStartDate],
-        set: {
+    // Check if grocery list exists first
+    const existing = await this.getGroceryList(groceryListData.userId, groceryListData.weekStartDate);
+    
+    if (existing) {
+      // Update existing
+      const [result] = await db
+        .update(groceryLists)
+        .set({
           ingredients: groceryListData.ingredients,
-        },
-      })
-      .returning();
-    return result;
+        })
+        .where(
+          and(
+            eq(groceryLists.userId, groceryListData.userId),
+            eq(groceryLists.weekStartDate, groceryListData.weekStartDate)
+          )
+        )
+        .returning();
+      return result;
+    } else {
+      // Insert new
+      const [result] = await db
+        .insert(groceryLists)
+        .values(groceryListData)
+        .returning();
+      return result;
+    }
   }
 
   // User favorites methods

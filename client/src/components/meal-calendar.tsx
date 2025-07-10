@@ -22,7 +22,7 @@ interface CalendarDay {
 }
 
 export function MealCalendar({ onMealSelect }: MealCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1)); // July 2025 (month is 0-indexed)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<string>("dinner");
   const { toast } = useToast();
@@ -33,9 +33,11 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
 
   // Fetch calendar meals for the current month
   const { data: calendarMeals = [], isLoading } = useQuery({
-    queryKey: ["/api/calendar", monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]],
+    queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/calendar?startDate=${monthStart.toISOString().split('T')[0]}&endDate=${monthEnd.toISOString().split('T')[0]}`, {});
+      const startDateStr = format(monthStart, 'yyyy-MM-dd');
+      const endDateStr = format(monthEnd, 'yyyy-MM-dd');
+      const response = await apiRequest("GET", `/api/calendar?startDate=${startDateStr}&endDate=${endDateStr}`, {});
       return response.json();
     },
   });
@@ -99,9 +101,10 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
     end: monthEnd,
   }).map(date => ({
     date,
-    meals: calendarMeals.filter((cm: any) => 
-      isSameDay(new Date(cm.scheduledDate), date)
-    ),
+    meals: calendarMeals.filter((cm: any) => {
+      const mealDate = new Date(cm.scheduledDate + 'T00:00:00'); // Add time to avoid timezone issues
+      return isSameDay(mealDate, date);
+    }),
     isCurrentMonth: isSameMonth(date, currentDate),
   }));
 

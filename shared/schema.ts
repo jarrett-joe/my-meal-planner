@@ -87,7 +87,9 @@ export const groceryLists = pgTable("grocery_lists", {
   weekStartDate: timestamp("week_start_date").notNull(),
   ingredients: jsonb("ingredients").$type<{category: string, items: string[]}[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  userWeekUnique: unique().on(table.userId, table.weekStartDate),
+}));
 
 // User favorite meals
 export const userFavorites = pgTable("user_favorites", {
