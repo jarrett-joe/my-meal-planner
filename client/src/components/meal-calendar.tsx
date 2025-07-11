@@ -46,7 +46,18 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
       const endDateStr = format(monthEnd, 'yyyy-MM-dd');
       console.log('Fetching calendar data for:', startDateStr, 'to', endDateStr);
       try {
-        const response = await apiRequest("GET", `/api/calendar?startDate=${startDateStr}&endDate=${endDateStr}`, {});
+        const response = await fetch(`/api/calendar?startDate=${startDateStr}&endDate=${endDateStr}`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         console.log('Calendar data received:', data);
         console.log('Calendar meals count:', data.length);
