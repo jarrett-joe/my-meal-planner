@@ -36,6 +36,9 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
   const monthEnd = endOfMonth(currentDate);
 
   // Fetch calendar meals for the current month
+  console.log('Calendar component rendering with currentDate:', currentDate);
+  console.log('Month start:', format(monthStart, 'yyyy-MM-dd'), 'Month end:', format(monthEnd, 'yyyy-MM-dd'));
+  
   const { data: calendarMeals = [], isLoading, error } = useQuery({
     queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')],
     queryFn: async () => {
@@ -53,6 +56,9 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
         throw error;
       }
     },
+    enabled: true, // Ensure query is enabled
+    staleTime: 0, // Always refetch to get fresh data
+    gcTime: 0, // Don't cache the data
   });
 
   // Fetch user favorites for meal selection
@@ -203,8 +209,14 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
       <CardContent>
         {isLoading ? (
           <div className="text-center py-8">Loading calendar...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">Error loading calendar: {error.message}</div>
         ) : (
-          <div className="grid grid-cols-7 gap-2">
+          <div>
+            <div className="text-sm text-gray-600 mb-2">
+              Found {calendarMeals.length} meals for {format(currentDate, "MMMM yyyy")}
+            </div>
+            <div className="grid grid-cols-7 gap-2">
             {/* Day headers */}
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
               <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
@@ -321,6 +333,7 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
                 </Dialog>
               </div>
             ))}
+            </div>
           </div>
         )}
       </CardContent>
