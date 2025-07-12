@@ -239,6 +239,8 @@ export class DatabaseStorage implements IStorage {
     // Convert to date string for comparison to handle timezone issues
     const dateStr = weekStartDate.toISOString().split('T')[0];
     
+    console.log(`Looking for grocery list with userId: ${userId}, dateStr: ${dateStr}`);
+    
     const [groceryList] = await db
       .select()
       .from(groceryLists)
@@ -248,6 +250,8 @@ export class DatabaseStorage implements IStorage {
           sql`DATE(${groceryLists.weekStartDate}) = ${dateStr}`
         )
       );
+      
+    console.log(`Found grocery list:`, groceryList);
     return groceryList;
   }
 

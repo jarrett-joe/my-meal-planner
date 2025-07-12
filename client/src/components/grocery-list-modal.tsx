@@ -13,13 +13,24 @@ interface GroceryListModalProps {
 }
 
 export function GroceryListModal({ open, onOpenChange, weekStartDate }: GroceryListModalProps) {
-  const { data: groceryList, isLoading } = useQuery({
+  const { data: groceryList, isLoading, error } = useQuery({
     queryKey: ["/api/grocery-list", weekStartDate.toISOString().split('T')[0]],
     queryFn: async () => {
       const response = await apiRequest("GET", `/api/grocery-list?weekStartDate=${weekStartDate.toISOString().split('T')[0]}`, {});
       return response.json();
     },
     enabled: open,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
+
+  console.log('GroceryListModal debug:', { 
+    open, 
+    isLoading, 
+    error, 
+    groceryList, 
+    hasIngredients: groceryList?.ingredients?.length,
+    weekStartDate: weekStartDate.toISOString().split('T')[0]
   });
 
   const handleDownload = () => {
@@ -83,6 +94,14 @@ export function GroceryListModal({ open, onOpenChange, weekStartDate }: GroceryL
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <ShoppingCart className="w-16 h-16 text-red-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-red-900 mb-2">Error loading grocery list</h3>
+            <p className="text-red-600 text-sm">
+              {error instanceof Error ? error.message : 'Unknown error occurred'}
+            </p>
           </div>
         ) : groceryList?.ingredients?.length ? (
           <>

@@ -491,11 +491,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const groceryCategories = await generateGroceryList(mealSuggestions);
       
       // Save grocery list
+      const weekStart = weekStartDate ? new Date(weekStartDate) : new Date();
       const groceryListData = insertGroceryListSchema.parse({
         userId,
-        weekStartDate: new Date(weekStartDate),
+        weekStartDate: weekStart,
         ingredients: groceryCategories
       });
+      
+      console.log(`Saving grocery list for user ${userId}, weekStart: ${weekStart.toISOString()}, ingredients count: ${groceryCategories.length}`);
       
       const savedList = await storage.upsertGroceryList(groceryListData);
       res.json(savedList);
@@ -510,8 +513,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = getUserId(req);
       const weekStartDate = req.query.weekStartDate ? new Date(req.query.weekStartDate as string) : new Date();
       
+      console.log(`Fetching grocery list for user ${userId}, date: ${weekStartDate.toISOString()}`);
+      
       const groceryList = await storage.getGroceryList(userId, weekStartDate);
+      console.log(`Found grocery list:`, groceryList);
+      
       if (!groceryList) {
+        console.log("No grocery list found, returning empty ingredients");
         return res.json({ ingredients: [] });
       }
       res.json(groceryList);

@@ -115,8 +115,11 @@ export default function Dashboard() {
       });
       return response.json();
     },
-    onSuccess: () => {
-      setShowGroceryList(true);
+    onSuccess: (data) => {
+      // Invalidate grocery list cache to fetch the updated data
+      queryClient.invalidateQueries({ queryKey: ["/api/grocery-list"] });
+      // Set a small delay to ensure cache invalidation completes
+      setTimeout(() => setShowGroceryList(true), 100);
       toast({ title: "Grocery list generated successfully!" });
     },
     onError: (error) => {
