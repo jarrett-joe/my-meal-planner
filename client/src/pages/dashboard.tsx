@@ -105,12 +105,11 @@ export default function Dashboard() {
     },
   });
 
-  // Generate grocery list mutation
+  // Generate grocery list mutation from calendar meals
   const generateGroceryListMutation = useMutation({
-    mutationFn: async (mealIds: number[]) => {
+    mutationFn: async (weekStart: Date) => {
       const response = await apiRequest("POST", "/api/grocery-list/generate", {
-        mealIds,
-        weekStartDate: weekStartDate.toISOString(),
+        weekStartDate: weekStart.toISOString(),
       });
       return response.json();
     },
@@ -165,16 +164,7 @@ export default function Dashboard() {
   };
 
   const handleGenerateGroceryList = () => {
-    if (selectedMeals.size === 0) {
-      toast({
-        title: "No meals selected",
-        description: "Please select at least one meal to generate a grocery list.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    generateGroceryListMutation.mutate(Array.from(selectedMeals));
+    generateGroceryListMutation.mutate(weekStartDate);
   };
 
   const handleRefreshSuggestions = () => {
@@ -416,19 +406,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Generate Grocery List */}
-          {meals.length > 0 && (
-            <div className="text-center">
-              <Button 
-                size="lg" 
-                onClick={handleGenerateGroceryList}
-                disabled={generateGroceryListMutation.isPending || selectedMeals.size === 0}
-              >
-                <ListChecks className="w-5 h-5 mr-3" />
-                {generateGroceryListMutation.isPending ? "Generating..." : "Generate Grocery List"}
-              </Button>
-            </div>
-          )}
+
 
           {/* Calendar Section */}
           <Card>
@@ -438,13 +416,24 @@ export default function Dashboard() {
                   <Calendar className="w-5 h-5" />
                   Meal Calendar
                 </CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCalendar(!showCalendar)}
-                >
-                  {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateGroceryList}
+                    disabled={generateGroceryListMutation.isPending}
+                  >
+                    <ListChecks className="w-4 h-4 mr-2" />
+                    {generateGroceryListMutation.isPending ? "Generating..." : "Generate Grocery List"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCalendar(!showCalendar)}
+                  >
+                    {showCalendar ? 'Hide Calendar' : 'Show Calendar'}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             {showCalendar && (

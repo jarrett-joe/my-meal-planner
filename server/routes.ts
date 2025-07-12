@@ -421,7 +421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Grocery list generation
+  // Grocery list generation from calendar meals
   app.post('/api/grocery-list/generate', requireAuth, async (req: any, res) => {
     try {
       const userId = getUserId(req);
@@ -431,18 +431,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Active subscription required" });
       }
 
-      const { mealIds, weekStartDate } = req.body;
+      const { weekStartDate } = req.body;
       
-      if (!Array.isArray(mealIds) || mealIds.length === 0) {
-        return res.status(400).json({ message: "No meals selected" });
+      if (!weekStartDate) {
+        return res.status(400).json({ message: "Week start date is required" });
       }
 
-      // Fetch selected meals
-      const meals = await Promise.all(
-        mealIds.map((id: number) => storage.getMeal(id))
-      );
+      const startDate = new Date(weekStartDate);
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 6); // 7 day week
 
-      const validMeals = meals.filter(Boolean) as Meal[];
+      console.log(`Generating grocery list for user ${userId}, week: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+
+      // Fetch calendar meals for the week
+      const calendarMeals = await storage.getCalendarMeals(userId, startDate, endDate);
+      
+      if (calendarMeals.length === 0) {
+        return res.status(400).json({ message: "No meals scheduled for this week. Please add meals to your calendar first." });
+      }
+
+      console.log(`Found ${calendarMeals.length} calendar meals for grocery list generation`);
+
+      // Extract the meals from calendar entries
+      const validMeals = calendarMeals.map(cm => cm.meal);
       
       if (validMeals.length === 0) {
         return res.status(400).json({ message: "No valid meals found" });

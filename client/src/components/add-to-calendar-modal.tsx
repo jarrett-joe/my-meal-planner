@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { format, addDays, startOfWeek } from "date-fns";
+import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 
 interface AddToCalendarModalProps {
   meal: Meal | null;
@@ -21,9 +21,11 @@ export function AddToCalendarModal({ meal, open, onOpenChange }: AddToCalendarMo
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedMealType, setSelectedMealType] = useState<string>("dinner");
 
-  // Generate next 7 days for selection
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  // Generate all days for the current month
+  const currentDate = new Date(2025, 6, 1); // July 2025 to match calendar
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const addToCalendarMutation = useMutation({
     mutationFn: async () => {
@@ -101,7 +103,7 @@ export function AddToCalendarModal({ meal, open, onOpenChange }: AddToCalendarMo
                   <SelectValue placeholder="Choose a date" />
                 </SelectTrigger>
                 <SelectContent>
-                  {weekDays.map((date) => (
+                  {monthDays.map((date) => (
                     <SelectItem key={date.toISOString()} value={date.toISOString().split('T')[0]}>
                       {format(date, 'EEEE, MMM d')}
                     </SelectItem>
