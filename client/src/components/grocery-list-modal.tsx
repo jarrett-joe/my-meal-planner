@@ -16,7 +16,7 @@ export function GroceryListModal({ open, onOpenChange, weekStartDate }: GroceryL
   const { data: groceryList, isLoading, error } = useQuery({
     queryKey: ["/api/grocery-list", weekStartDate.toISOString().split('T')[0]],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/grocery-list?weekStartDate=${weekStartDate.toISOString().split('T')[0]}`, {});
+      const response = await apiRequest("GET", `/api/grocery-list?weekStartDate=${weekStartDate.toISOString().split('T')[0]}`);
       return response.json();
     },
     enabled: open,
