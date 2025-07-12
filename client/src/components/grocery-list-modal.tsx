@@ -24,14 +24,7 @@ export function GroceryListModal({ open, onOpenChange, weekStartDate }: GroceryL
     refetchOnWindowFocus: false,
   });
 
-  console.log('GroceryListModal debug:', { 
-    open, 
-    isLoading, 
-    error, 
-    groceryList, 
-    hasIngredients: groceryList?.ingredients?.length,
-    weekStartDate: weekStartDate.toISOString().split('T')[0]
-  });
+
 
   const handleDownload = () => {
     if (!groceryList?.ingredients) return;
