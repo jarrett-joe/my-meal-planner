@@ -13,9 +13,10 @@ interface AddToCalendarModalProps {
   meal: Meal | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onMealAdded?: (mealId: number) => void;
 }
 
-export function AddToCalendarModal({ meal, open, onOpenChange }: AddToCalendarModalProps) {
+export function AddToCalendarModal({ meal, open, onOpenChange, onMealAdded }: AddToCalendarModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -39,6 +40,11 @@ export function AddToCalendarModal({ meal, open, onOpenChange }: AddToCalendarMo
       return response.json();
     },
     onSuccess: () => {
+      // Automatically add the meal to selected meals for grocery list
+      if (onMealAdded && meal?.id) {
+        onMealAdded(meal.id);
+      }
+      
       // Invalidate all calendar-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
       // Force refetch of all calendar queries
@@ -50,7 +56,7 @@ export function AddToCalendarModal({ meal, open, onOpenChange }: AddToCalendarMo
       setSelectedMealType("dinner");
       toast({
         title: "Added to Calendar",
-        description: `${meal?.title} has been scheduled for ${selectedMealType}`,
+        description: `${meal?.title} has been scheduled for ${selectedMealType} and selected for grocery list`,
       });
     },
     onError: () => {

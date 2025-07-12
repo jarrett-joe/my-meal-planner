@@ -23,6 +23,7 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Display recipe images when available
 
 ## Recent Changes
+- **January 12, 2025**: ✅ **NEW** - Meals automatically selected for grocery list when added to calendar
 - **January 12, 2025**: ✅ **COMPLETED** - Meal selection functionality for grocery lists fully working
 - **January 12, 2025**: ✅ Enhanced calendar with checkboxes for individual meal selection and "Select All" option
 - **January 12, 2025**: ✅ Updated grocery list generation to work with selected meals instead of all calendar meals

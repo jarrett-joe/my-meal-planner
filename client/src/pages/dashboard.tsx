@@ -473,6 +473,10 @@ export default function Dashboard() {
                       return newSet;
                     });
                   }}
+                  onMealAdded={(mealId) => {
+                    // Automatically select newly added meals for grocery list
+                    setSelectedCalendarMeals(prev => new Set(prev).add(mealId));
+                  }}
                 />
               </CardContent>
             )}
@@ -492,6 +496,10 @@ export default function Dashboard() {
         meal={selectedMealForCalendar}
         open={showAddToCalendar}
         onOpenChange={setShowAddToCalendar}
+        onMealAdded={(mealId) => {
+          // Automatically select newly added meals for grocery list
+          setSelectedCalendarMeals(prev => new Set(prev).add(mealId));
+        }}
       />
 
       {/* Meal Detail Modal - For viewing recipes from calendar */}

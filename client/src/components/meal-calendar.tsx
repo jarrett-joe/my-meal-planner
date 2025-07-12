@@ -17,6 +17,7 @@ interface MealCalendarProps {
   onMealSelect?: (meal: Meal) => void;
   selectedCalendarMeals?: Set<number>;
   onCalendarMealToggle?: (mealId: number) => void;
+  onMealAdded?: (mealId: number) => void;
 }
 
 interface CalendarDay {
@@ -25,7 +26,7 @@ interface CalendarDay {
   isCurrentMonth: boolean;
 }
 
-export function MealCalendar({ onMealSelect, selectedCalendarMeals = new Set(), onCalendarMealToggle }: MealCalendarProps) {
+export function MealCalendar({ onMealSelect, selectedCalendarMeals = new Set(), onCalendarMealToggle, onMealAdded }: MealCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1)); // Start at July 2025 to match the data
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<string>("dinner");
@@ -39,15 +40,12 @@ export function MealCalendar({ onMealSelect, selectedCalendarMeals = new Set(), 
   const monthEnd = endOfMonth(currentDate);
 
   // Fetch calendar meals for the current month
-  console.log('Calendar component rendering with currentDate:', currentDate);
-  console.log('Month start:', format(monthStart, 'yyyy-MM-dd'), 'Month end:', format(monthEnd, 'yyyy-MM-dd'));
   
   const { data: calendarMeals = [], isLoading, error } = useQuery({
     queryKey: ["/api/calendar", format(monthStart, 'yyyy-MM-dd'), format(monthEnd, 'yyyy-MM-dd')],
     queryFn: async () => {
       const startDateStr = format(monthStart, 'yyyy-MM-dd');
       const endDateStr = format(monthEnd, 'yyyy-MM-dd');
-      console.log('Fetching calendar data for:', startDateStr, 'to', endDateStr);
       try {
         const response = await fetch(`/api/calendar?startDate=${startDateStr}&endDate=${endDateStr}`, {
           method: "GET",
@@ -62,11 +60,8 @@ export function MealCalendar({ onMealSelect, selectedCalendarMeals = new Set(), 
         }
         
         const data = await response.json();
-        console.log('Calendar data received:', data);
-        console.log('Calendar meals count:', data.length);
         return data;
       } catch (error) {
-        console.error('Calendar fetch error:', error);
         throw error;
       }
     },
@@ -89,10 +84,14 @@ export function MealCalendar({ onMealSelect, selectedCalendarMeals = new Set(), 
       });
       return response.json();
     },
-    onSuccess: (data) => {
-      console.log('Calendar addition successful:', data);
+    onSuccess: (data, variables) => {
       setSelectedDate(null);
       setDialogOpen(false);
+      
+      // Automatically add the meal to selected meals for grocery list
+      if (onMealAdded && variables.mealId) {
+        onMealAdded(variables.mealId);
+      }
       
       // Force immediate refetch with more specific invalidation
       queryClient.invalidateQueries({ 
@@ -108,7 +107,7 @@ export function MealCalendar({ onMealSelect, selectedCalendarMeals = new Set(), 
       
       toast({
         title: "Success",
-        description: "Meal added to calendar",
+        description: "Meal added to calendar and selected for grocery list",
       });
     },
     onError: () => {
@@ -125,7 +124,6 @@ export function MealCalendar({ onMealSelect, selectedCalendarMeals = new Set(), 
       await apiRequest("DELETE", `/api/calendar?scheduledDate=${date.toISOString().split('T')[0]}&mealType=${mealType}`, {});
     },
     onSuccess: () => {
-      console.log('Calendar removal successful');
       
       // Immediately invalidate and refetch queries
       queryClient.invalidateQueries({ queryKey: ["/api/calendar"] });
