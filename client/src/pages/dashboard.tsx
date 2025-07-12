@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [selectedMealForCalendar, setSelectedMealForCalendar] = useState<Meal | null>(null);
   const [showMealDetail, setShowMealDetail] = useState(false);
   const [selectedMealForDetail, setSelectedMealForDetail] = useState<Meal | null>(null);
+  const [selectedCalendarMeals, setSelectedCalendarMeals] = useState<Set<number>>(new Set());
 
   // Fetch user preferences
   const { data: preferences, isLoading: preferencesLoading } = useQuery({
@@ -105,11 +106,12 @@ export default function Dashboard() {
     },
   });
 
-  // Generate grocery list mutation from calendar meals
+  // Generate grocery list mutation from selected calendar meals
   const generateGroceryListMutation = useMutation({
-    mutationFn: async (weekStart: Date) => {
+    mutationFn: async (mealIds: number[]) => {
       const response = await apiRequest("POST", "/api/grocery-list/generate", {
-        weekStartDate: weekStart.toISOString(),
+        mealIds,
+        weekStartDate: weekStartDate.toISOString(),
       });
       return response.json();
     },
@@ -164,7 +166,15 @@ export default function Dashboard() {
   };
 
   const handleGenerateGroceryList = () => {
-    generateGroceryListMutation.mutate(weekStartDate);
+    if (selectedCalendarMeals.size === 0) {
+      toast({
+        title: "No meals selected",
+        description: "Please select at least one meal from your calendar to generate a grocery list.",
+        variant: "destructive",
+      });
+      return;
+    }
+    generateGroceryListMutation.mutate(Array.from(selectedCalendarMeals));
   };
 
   const handleRefreshSuggestions = () => {
@@ -421,10 +431,15 @@ export default function Dashboard() {
                     variant="outline"
                     size="sm"
                     onClick={handleGenerateGroceryList}
-                    disabled={generateGroceryListMutation.isPending}
+                    disabled={generateGroceryListMutation.isPending || selectedCalendarMeals.size === 0}
                   >
                     <ListChecks className="w-4 h-4 mr-2" />
-                    {generateGroceryListMutation.isPending ? "Generating..." : "Generate Grocery List"}
+                    {generateGroceryListMutation.isPending 
+                      ? "Generating..." 
+                      : selectedCalendarMeals.size > 0 
+                        ? `Generate Grocery List (${selectedCalendarMeals.size} meals)`
+                        : "Generate Grocery List"
+                    }
                   </Button>
                   <Button
                     variant="outline"
@@ -438,10 +453,24 @@ export default function Dashboard() {
             </CardHeader>
             {showCalendar && (
               <CardContent>
-                <MealCalendar onMealSelect={(meal) => {
-                  setSelectedMealForDetail(meal);
-                  setShowMealDetail(true);
-                }} />
+                <MealCalendar 
+                  onMealSelect={(meal) => {
+                    setSelectedMealForDetail(meal);
+                    setShowMealDetail(true);
+                  }}
+                  selectedCalendarMeals={selectedCalendarMeals}
+                  onCalendarMealToggle={(mealId) => {
+                    setSelectedCalendarMeals(prev => {
+                      const newSet = new Set(prev);
+                      if (newSet.has(mealId)) {
+                        newSet.delete(mealId);
+                      } else {
+                        newSet.add(mealId);
+                      }
+                      return newSet;
+                    });
+                  }}
+                />
               </CardContent>
             )}
           </Card>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, Plus, X, RefreshCw } from "lucide-react";
@@ -14,6 +15,8 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSam
 
 interface MealCalendarProps {
   onMealSelect?: (meal: Meal) => void;
+  selectedCalendarMeals?: Set<number>;
+  onCalendarMealToggle?: (mealId: number) => void;
 }
 
 interface CalendarDay {
@@ -22,7 +25,7 @@ interface CalendarDay {
   isCurrentMonth: boolean;
 }
 
-export function MealCalendar({ onMealSelect }: MealCalendarProps) {
+export function MealCalendar({ onMealSelect, selectedCalendarMeals = new Set(), onCalendarMealToggle }: MealCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1)); // Start at July 2025 to match the data
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<string>("dinner");
@@ -224,8 +227,33 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
           <div className="text-center py-8 text-red-500">Error loading calendar: {error.message}</div>
         ) : (
           <div>
-            <div className="text-sm text-gray-600 mb-2">
-              Found {calendarMeals.length} meals for {format(currentDate, "MMMM yyyy")}
+            <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+              <span>Found {calendarMeals.length} meals for {format(currentDate, "MMMM yyyy")}</span>
+              {onCalendarMealToggle && calendarMeals.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs">Select meals for grocery list:</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => {
+                      if (selectedCalendarMeals.size === calendarMeals.length) {
+                        // Deselect all
+                        calendarMeals.forEach(cm => onCalendarMealToggle(cm.meal.id));
+                      } else {
+                        // Select all
+                        calendarMeals.forEach(cm => {
+                          if (!selectedCalendarMeals.has(cm.meal.id)) {
+                            onCalendarMealToggle(cm.meal.id);
+                          }
+                        });
+                      }
+                    }}
+                  >
+                    {selectedCalendarMeals.size === calendarMeals.length ? 'Deselect All' : 'Select All'}
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-7 gap-2">
             {/* Day headers */}
@@ -254,13 +282,22 @@ export function MealCalendar({ onMealSelect }: MealCalendarProps) {
                       key={`${calendarMeal.id}`}
                       className="relative group"
                     >
-                      <Badge
-                        variant="secondary"
-                        className="text-xs block truncate cursor-pointer hover:bg-primary hover:text-white"
-                        onClick={() => handleMealClick(calendarMeal.meal)}
-                      >
-                        {calendarMeal.mealType}: {calendarMeal.meal.title}
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        {onCalendarMealToggle && (
+                          <Checkbox
+                            checked={selectedCalendarMeals.has(calendarMeal.meal.id)}
+                            onCheckedChange={() => onCalendarMealToggle(calendarMeal.meal.id)}
+                            className="w-3 h-3"
+                          />
+                        )}
+                        <Badge
+                          variant="secondary"
+                          className="text-xs flex-1 truncate cursor-pointer hover:bg-primary hover:text-white"
+                          onClick={() => handleMealClick(calendarMeal.meal)}
+                        >
+                          {calendarMeal.mealType}: {calendarMeal.meal.title}
+                        </Badge>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
