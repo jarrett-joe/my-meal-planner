@@ -955,15 +955,34 @@ async function parseWithAI(html: string, sourceUrl: string) {
     .replace(/<footer[^>]*>.*?<\/footer>/gis, '')
     .replace(/<aside[^>]*>.*?<\/aside>/gis, '');
 
-  // Look for recipe-specific content sections
-  const recipeMatches = cleanHtml.match(/<div[^>]*recipe[^>]*>.*?<\/div>/gis) ||
-                       cleanHtml.match(/<article[^>]*recipe[^>]*>.*?<\/article>/gis) ||
-                       cleanHtml.match(/<section[^>]*recipe[^>]*>.*?<\/section>/gis);
+  // Look for recipe-specific content sections with multiple patterns
+  const recipePatterns = [
+    /<div[^>]*recipe[^>]*>.*?<\/div>/gis,
+    /<article[^>]*recipe[^>]*>.*?<\/article>/gis,
+    /<section[^>]*recipe[^>]*>.*?<\/section>/gis,
+    /<div[^>]*entry-content[^>]*>.*?<\/div>/gis,
+    /<main[^>]*>.*?<\/main>/gis,
+    /<article[^>]*>.*?<\/article>/gis
+  ];
+  
+  let recipeMatches = null;
+  for (const pattern of recipePatterns) {
+    recipeMatches = cleanHtml.match(pattern);
+    if (recipeMatches && recipeMatches.length > 0) {
+      console.log(`Found content using pattern: ${pattern.source}`);
+      break;
+    }
+  }
   
   if (recipeMatches && recipeMatches.length > 0) {
     console.log("Found recipe-specific content sections");
     cleanHtml = recipeMatches.join(' ');
   }
+  
+  // Also look for specific recipe title in the content to validate we have the right recipe
+  const urlSlug = sourceUrl.split('/').slice(-2, -1)[0] || sourceUrl.split('/').slice(-1)[0];
+  const titleWords = urlSlug.replace(/-/g, ' ').toLowerCase();
+  console.log(`Looking for recipe related to: ${titleWords}`);
 
   // Final cleanup
   cleanHtml = cleanHtml
@@ -976,17 +995,28 @@ async function parseWithAI(html: string, sourceUrl: string) {
   
   console.log(`Using text content length: ${textContent.length} chars`);
 
+  // Extract the recipe name from the URL to help guide the AI
+  const urlParts = sourceUrl.split('/');
+  const urlSlug = urlParts[urlParts.length - 2] || urlParts[urlParts.length - 1];
+  const expectedRecipeName = urlSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  
   const prompt = `
-    I need you to extract the EXACT recipe from this specific webpage: ${sourceUrl}
+    You are extracting a recipe from this SPECIFIC webpage: ${sourceUrl}
+    
+    The URL suggests this recipe is about: "${expectedRecipeName}"
     
     Website content:
     ${textContent}
     
-    This URL should contain a specific recipe. Please find and extract ONLY that recipe's information.
+    CRITICAL INSTRUCTIONS:
+    1. Find the recipe that matches the URL "${sourceUrl}" - this should be about "${expectedRecipeName}"
+    2. Do NOT extract any other recipes that might be mentioned on the page
+    3. Look for the main recipe content that corresponds to this specific URL
+    4. The recipe title should match what the URL indicates: something related to "${expectedRecipeName}"
     
     Return a JSON object with these exact fields:
     {
-      "title": "Exact recipe title from the page",
+      "title": "The exact recipe title matching this URL (should be related to ${expectedRecipeName})",
       "description": "Recipe description or summary",
       "cuisine": "Type of cuisine (Italian, Mexican, etc.)",
       "protein": "Main protein (Chicken, Beef, Fish, Vegetarian, etc.)",
@@ -996,10 +1026,10 @@ async function parseWithAI(html: string, sourceUrl: string) {
     }
     
     Requirements:
-    - Find the MAIN recipe on this page, not random content
+    - The recipe title MUST match what this URL is about: "${expectedRecipeName}"
     - Scale ingredients to serve exactly 4 people
     - Replace any seed oils (canola, vegetable, sunflower) with EVOO or avocado oil
-    - Extract the actual recipe title from the page, not a generic name
+    - If you can't find the specific recipe for this URL, return an error in the title field
   `;
 
   try {
@@ -1012,6 +1042,21 @@ async function parseWithAI(html: string, sourceUrl: string) {
 
     const result = JSON.parse(completion.choices[0].message.content || "{}");
     console.log("AI parsing result:", result.title);
+    
+    // Validate that we got the right recipe by checking if the title makes sense for the URL
+    const urlSlug = sourceUrl.split('/').slice(-2, -1)[0] || sourceUrl.split('/').slice(-1)[0];
+    const expectedWords = urlSlug.replace(/-/g, ' ').toLowerCase().split(' ');
+    const titleWords = (result.title || "").toLowerCase();
+    
+    const matchCount = expectedWords.filter(word => 
+      word.length > 2 && titleWords.includes(word)
+    ).length;
+    
+    if (matchCount < 2) {
+      console.log(`Warning: Recipe title "${result.title}" may not match URL "${sourceUrl}"`);
+      console.log(`Expected words: ${expectedWords.join(', ')}`);
+      console.log(`Match count: ${matchCount}`);
+    }
     
     return {
       title: result.title || "Recipe",
