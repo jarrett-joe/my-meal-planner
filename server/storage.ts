@@ -41,6 +41,7 @@ export interface IStorage {
   getMeal(id: number): Promise<Meal | undefined>;
   createMeal(meal: InsertMeal): Promise<Meal>;
   getMealsByPreferences(proteinPrefs: string[], cuisinePrefs: string[], limit?: number): Promise<Meal[]>;
+  getUserRecipes(userId: string): Promise<Meal[]>;
   
   // User meal selections
   getUserMealSelections(userId: string, weekStartDate: Date): Promise<UserMealSelection[]>;
@@ -192,8 +193,23 @@ export class DatabaseStorage implements IStorage {
     const results = await db
       .select()
       .from(meals)
+      .where(eq(meals.isUserGenerated, false)) // Only AI-generated meals
       .limit(limit)
       .orderBy(desc(meals.rating));
+    return results;
+  }
+
+  async getUserRecipes(userId: string): Promise<Meal[]> {
+    const results = await db
+      .select()
+      .from(meals)
+      .where(
+        and(
+          eq(meals.isUserGenerated, true),
+          eq(meals.userId, userId)
+        )
+      )
+      .orderBy(desc(meals.createdAt));
     return results;
   }
 

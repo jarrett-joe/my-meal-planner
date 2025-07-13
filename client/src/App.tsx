@@ -8,6 +8,7 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Subscribe from "@/pages/subscribe";
 import Favorites from "@/pages/favorites";
+import CustomRecipes from "@/pages/custom-recipes";
 import AdminLogin from "@/pages/admin-login";
 import NotFound from "@/pages/not-found";
 
@@ -27,6 +28,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/favorites" component={Favorites} />
+          <Route path="/custom-recipes" component={CustomRecipes} />
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/admin" component={AdminLogin} />
         </>

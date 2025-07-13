@@ -54,7 +54,7 @@ export const userPreferences = pgTable("user_preferences", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Meals suggested by AI
+// Meals (AI-generated and user-uploaded)
 export const meals = pgTable("meals", {
   id: serial("id").primaryKey(),
   title: varchar("title").notNull(),
@@ -68,6 +68,8 @@ export const meals = pgTable("meals", {
   ingredients: jsonb("ingredients").$type<string[]>().default([]),
   instructions: text("instructions"),
   sourceUrl: varchar("source_url"),
+  isUserGenerated: boolean("is_user_generated").default(false), // true for user uploads, false for AI
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }), // null for AI, user ID for uploads
   createdAt: timestamp("created_at").defaultNow(),
 });
 

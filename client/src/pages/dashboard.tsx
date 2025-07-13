@@ -10,7 +10,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { PreferenceChips } from "@/components/preference-chips";
 import { MealCard } from "@/components/meal-card";
 import { GroceryListModal } from "@/components/grocery-list-modal";
-import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard, Heart, Calendar, LogOut } from "lucide-react";
+import { RefreshCw, ListChecks, Settings, ChefHat, CreditCard, Heart, Calendar, LogOut, Plus } from "lucide-react";
 import { Link } from "wouter";
 import { MealCalendar } from "@/components/meal-calendar";
 import { AddToCalendarModal } from "@/components/add-to-calendar-modal";
@@ -293,6 +293,12 @@ export default function Dashboard() {
                 <Button variant="outline" size="sm">
                   <Heart className="w-4 h-4 mr-2" />
                   Favorites
+                </Button>
+              </Link>
+              <Link href="/custom-recipes">
+                <Button variant="outline" size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Custom Recipes
                 </Button>
               </Link>
               {user?.id === 'admin-master' ? (

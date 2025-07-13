@@ -5,12 +5,14 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 
 ## Key Features
 - AI-powered meal discovery using GROK API
+- Custom recipe upload functionality (URL parsing and manual entry)
 - Family-sized recipes (serves 4 people)
 - Healthy cooking with only EVOO and avocado oil (no seed oils)
 - Automated grocery list generation
 - Meal-based subscription system with credit tracking
 - 10 free trial meals for new users
 - Three subscription tiers: Basic (20 meals/$10), Standard (40 meals/$20), Premium (60 meals/$30)
+- Integrated calendar planning with favorites system
 - User authentication via Replit Auth
 - PostgreSQL database for data persistence
 
@@ -23,7 +25,12 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Display recipe images when available
 
 ## Recent Changes
-- **January 12, 2025**: ✅ **NEW** - Meals automatically selected for grocery list when added to calendar
+- **January 13, 2025**: ✅ **NEW** - Custom recipe upload functionality with URL parsing and manual entry
+- **January 13, 2025**: ✅ Added dedicated Custom Recipes page accessible from dashboard navigation
+- **January 13, 2025**: ✅ Integrated XAI API for intelligent recipe parsing from URLs
+- **January 13, 2025**: ✅ Database schema updated to distinguish user-uploaded vs AI-generated recipes
+- **January 13, 2025**: ✅ Custom recipes fully integrated with existing meal planning, calendar, and favorites system
+- **January 12, 2025**: ✅ **COMPLETED** - Meals automatically selected for grocery list when added to calendar
 - **January 12, 2025**: ✅ **COMPLETED** - Meal selection functionality for grocery lists fully working
 - **January 12, 2025**: ✅ Enhanced calendar with checkboxes for individual meal selection and "Select All" option
 - **January 12, 2025**: ✅ Updated grocery list generation to work with selected meals instead of all calendar meals

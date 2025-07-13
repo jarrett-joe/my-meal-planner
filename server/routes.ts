@@ -621,6 +621,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Custom recipe routes
+  app.get('/api/recipes/user', requireAuth, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const recipes = await storage.getUserRecipes(userId);
+      res.json(recipes);
+    } catch (error) {
+      console.error("Error fetching user recipes:", error);
+      res.status(500).json({ message: "Failed to fetch user recipes" });
+    }
+  });
+
+  app.post('/api/recipes/create', requireAuth, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Validate required fields
+      const { title, ingredients } = req.body;
+      if (!title || !ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
+        return res.status(400).json({ message: "Title and ingredients are required" });
+      }
+
+      // Create the recipe
+      const recipe = await storage.createMeal({
+        title,
+        description: req.body.description || "",
+        cuisine: req.body.cuisine || "",
+        protein: req.body.protein || "",
+        cookingTime: req.body.cookingTime || null,
+        rating: "5.0", // Default rating for user recipes
+        imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&q=80", // Default recipe image
+        imageDescription: "A beautifully prepared homemade dish",
+        ingredients,
+        instructions: req.body.instructions || "",
+        sourceUrl: req.body.sourceUrl || null,
+        isUserGenerated: true,
+        userId
+      });
+
+      res.json(recipe);
+    } catch (error) {
+      console.error("Error creating recipe:", error);
+      res.status(500).json({ message: "Failed to create recipe" });
+    }
+  });
+
+  app.post('/api/recipes/parse-url', requireAuth, async (req: any, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ message: "URL is required" });
+      }
+
+      // Use XAI to parse the recipe from the URL
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch recipe from URL");
+      }
+      
+      const html = await response.text();
+      
+      // Use Grok to parse the recipe from HTML
+      const { generateMealSuggestions } = await import("./grok");
+      
+      // Extract recipe information using AI
+      const parsedRecipe = await parseRecipeFromHtml(html, url);
+      
+      res.json(parsedRecipe);
+    } catch (error) {
+      console.error("Error parsing recipe URL:", error);
+      res.status(500).json({ message: "Failed to parse recipe from URL" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper function to parse recipe from HTML using XAI
+async function parseRecipeFromHtml(html: string, sourceUrl: string) {
+  const { generateMealSuggestions } = await import("./grok");
+  
+  // Create a prompt to extract recipe information
+  const prompt = `
+    Please extract recipe information from this HTML content and return it as JSON:
+    
+    ${html.substring(0, 8000)} // Limit HTML length
+    
+    Please return ONLY a JSON object with these fields:
+    {
+      "title": "Recipe title",
+      "description": "Brief description",
+      "cuisine": "Type of cuisine (Italian, Mexican, etc.)",
+      "protein": "Main protein (Chicken, Beef, Fish, Vegetarian, etc.)",
+      "cookingTime": 30,
+      "ingredients": ["ingredient 1", "ingredient 2", ...],
+      "instructions": "Step by step instructions"
+    }
+    
+    Requirements:
+    - Ensure all ingredients are for serving 4 people
+    - Replace any seed oils (canola, vegetable, sunflower) with EVOO or avocado oil
+    - Make sure ingredients are clearly listed
+    - Combine the cooking instructions into a clear paragraph
+  `;
+  
+  try {
+    // Use XAI to parse the content
+    const OpenAI = (await import("openai")).default;
+    const openai = new OpenAI({ 
+      baseURL: "https://api.x.ai/v1", 
+      apiKey: process.env.XAI_API_KEY 
+    });
+
+    const completion = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 1000
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content || "{}");
+    
+    return {
+      title: result.title || "Recipe",
+      description: result.description || "",
+      cuisine: result.cuisine || "",
+      protein: result.protein || "",
+      cookingTime: result.cookingTime || null,
+      ingredients: Array.isArray(result.ingredients) ? result.ingredients : [],
+      instructions: result.instructions || ""
+    };
+  } catch (error) {
+    console.error("Error parsing recipe with AI:", error);
+    throw new Error("Failed to parse recipe content");
+  }
 }
