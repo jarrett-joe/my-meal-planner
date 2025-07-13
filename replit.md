@@ -25,6 +25,7 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Display recipe images when available
 
 ## Recent Changes
+- **January 13, 2025**: ✅ **UPDATED** - Enhanced recipe URL parsing with structured data extraction for better accuracy
 - **January 13, 2025**: ✅ **NEW** - Custom recipe upload functionality with URL parsing and manual entry
 - **January 13, 2025**: ✅ Added dedicated Custom Recipes page accessible from dashboard navigation
 - **January 13, 2025**: ✅ Integrated XAI API for intelligent recipe parsing from URLs

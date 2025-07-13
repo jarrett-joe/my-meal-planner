@@ -707,62 +707,245 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Helper function to parse recipe from HTML using XAI
 async function parseRecipeFromHtml(html: string, sourceUrl: string) {
-  const { generateMealSuggestions } = await import("./grok");
+  try {
+    // First, try to extract structured data (JSON-LD) from the HTML
+    const structuredData = extractStructuredData(html);
+    
+    if (structuredData) {
+      console.log("Found structured data:", structuredData);
+      return await formatStructuredRecipe(structuredData, sourceUrl);
+    }
+    
+    // Fallback to AI parsing with cleaned HTML
+    return await parseWithAI(html, sourceUrl);
+  } catch (error) {
+    console.error("Error parsing recipe:", error);
+    throw new Error("Failed to parse recipe content");
+  }
+}
+
+// Extract JSON-LD structured data from HTML
+function extractStructuredData(html: string) {
+  // Look for JSON-LD script tags with recipe schema
+  const jsonLdMatches = html.match(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>(.*?)<\/script>/gis);
   
-  // Create a prompt to extract recipe information
+  if (!jsonLdMatches) return null;
+  
+  for (const match of jsonLdMatches) {
+    try {
+      const jsonContent = match.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
+      const data = JSON.parse(jsonContent);
+      
+      // Handle array of structured data
+      const items = Array.isArray(data) ? data : [data];
+      
+      for (const item of items) {
+        if (item['@type'] === 'Recipe' || (item['@graph'] && item['@graph'].find((g: any) => g['@type'] === 'Recipe'))) {
+          const recipe = item['@type'] === 'Recipe' ? item : item['@graph'].find((g: any) => g['@type'] === 'Recipe');
+          if (recipe) return recipe;
+        }
+      }
+    } catch (e) {
+      continue; // Try next script tag
+    }
+  }
+  
+  return null;
+}
+
+// Format structured recipe data
+async function formatStructuredRecipe(data: any, sourceUrl: string) {
+  // Extract ingredients and ensure they serve 4 people
+  let ingredients = [];
+  if (data.recipeIngredient) {
+    ingredients = Array.isArray(data.recipeIngredient) ? data.recipeIngredient : [data.recipeIngredient];
+  }
+  
+  // Extract instructions
+  let instructions = "";
+  if (data.recipeInstructions) {
+    const instructionList = Array.isArray(data.recipeInstructions) ? data.recipeInstructions : [data.recipeInstructions];
+    instructions = instructionList.map((inst: any) => {
+      if (typeof inst === 'string') return inst;
+      if (inst.text) return inst.text;
+      if (inst.name) return inst.name;
+      return '';
+    }).filter(Boolean).join(' ');
+  }
+  
+  // Extract cooking time
+  let cookingTime = null;
+  if (data.totalTime) {
+    cookingTime = parseDuration(data.totalTime);
+  } else if (data.cookTime) {
+    cookingTime = parseDuration(data.cookTime);
+  }
+  
+  // Clean up ingredients (replace seed oils, ensure 4 servings)
+  const cleanedIngredients = await cleanIngredients(ingredients);
+  
+  return {
+    title: data.name || "Recipe",
+    description: data.description || "",
+    cuisine: determineCuisine(data.name, data.description),
+    protein: determineProtein(cleanedIngredients),
+    cookingTime,
+    ingredients: cleanedIngredients,
+    instructions: instructions || ""
+  };
+}
+
+// Parse duration string (ISO 8601 or common formats)
+function parseDuration(duration: string): number | null {
+  if (!duration) return null;
+  
+  // ISO 8601 format (PT30M)
+  const isoMatch = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+  if (isoMatch) {
+    const hours = parseInt(isoMatch[1] || '0');
+    const minutes = parseInt(isoMatch[2] || '0');
+    return hours * 60 + minutes;
+  }
+  
+  // Common formats (30 minutes, 1 hour 30 minutes, etc.)
+  const timeMatch = duration.match(/(\d+)\s*(hour|hr|h|minute|min|m)/gi);
+  if (timeMatch) {
+    let totalMinutes = 0;
+    for (const match of timeMatch) {
+      const [, num, unit] = match.match(/(\d+)\s*(hour|hr|h|minute|min|m)/i) || [];
+      const value = parseInt(num);
+      if (unit.toLowerCase().startsWith('h')) {
+        totalMinutes += value * 60;
+      } else {
+        totalMinutes += value;
+      }
+    }
+    return totalMinutes;
+  }
+  
+  return null;
+}
+
+// Clean ingredients and ensure they serve 4 people
+async function cleanIngredients(ingredients: string[]): Promise<string[]> {
+  const OpenAI = (await import("openai")).default;
+  const openai = new OpenAI({ 
+    baseURL: "https://api.x.ai/v1", 
+    apiKey: process.env.XAI_API_KEY 
+  });
+
   const prompt = `
-    Please extract recipe information from this HTML content and return it as JSON:
+    Please clean and adjust these recipe ingredients to serve exactly 4 people. Replace any seed oils (canola, vegetable, sunflower, etc.) with EVOO or avocado oil.
     
-    ${html.substring(0, 8000)} // Limit HTML length
+    Original ingredients:
+    ${ingredients.map(ing => `- ${ing}`).join('\n')}
     
-    Please return ONLY a JSON object with these fields:
+    Return ONLY a JSON array of cleaned ingredients:
+    ["ingredient 1", "ingredient 2", ...]
+    
+    Requirements:
+    - Scale quantities for 4 servings
+    - Replace seed oils with EVOO or avocado oil
+    - Keep measurements clear and practical
+  `;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+      max_tokens: 500
+    });
+
+    const result = JSON.parse(completion.choices[0].message.content || "[]");
+    return Array.isArray(result) ? result : ingredients;
+  } catch (error) {
+    console.error("Error cleaning ingredients:", error);
+    return ingredients;
+  }
+}
+
+// Determine cuisine type from recipe name and description
+function determineCuisine(name: string, description: string): string {
+  const text = `${name} ${description}`.toLowerCase();
+  
+  if (text.includes('italian') || text.includes('pasta') || text.includes('pizza') || text.includes('risotto')) return 'Italian';
+  if (text.includes('mexican') || text.includes('taco') || text.includes('enchilada') || text.includes('burrito')) return 'Mexican';
+  if (text.includes('asian') || text.includes('chinese') || text.includes('thai') || text.includes('soy sauce')) return 'Asian';
+  if (text.includes('mediterranean') || text.includes('greek') || text.includes('olive')) return 'Mediterranean';
+  if (text.includes('indian') || text.includes('curry') || text.includes('masala')) return 'Indian';
+  if (text.includes('french') || text.includes('cream sauce')) return 'French';
+  
+  return 'American';
+}
+
+// Determine main protein from ingredients
+function determineProtein(ingredients: string[]): string {
+  const text = ingredients.join(' ').toLowerCase();
+  
+  if (text.includes('chicken')) return 'Chicken';
+  if (text.includes('beef') || text.includes('steak')) return 'Beef';
+  if (text.includes('fish') || text.includes('salmon') || text.includes('tuna')) return 'Fish';
+  if (text.includes('pork') || text.includes('bacon')) return 'Pork';
+  if (text.includes('tofu')) return 'Tofu';
+  
+  return 'Vegetarian';
+}
+
+// Fallback AI parsing for when structured data isn't available
+async function parseWithAI(html: string, sourceUrl: string) {
+  const OpenAI = (await import("openai")).default;
+  const openai = new OpenAI({ 
+    baseURL: "https://api.x.ai/v1", 
+    apiKey: process.env.XAI_API_KEY 
+  });
+
+  // Clean HTML and extract main content
+  const cleanHtml = html
+    .replace(/<script[^>]*>.*?<\/script>/gis, '')
+    .replace(/<style[^>]*>.*?<\/style>/gis, '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .substring(0, 6000);
+
+  const prompt = `
+    Extract recipe information from this website content for "${sourceUrl}":
+    
+    ${cleanHtml}
+    
+    Return ONLY a JSON object with these exact fields:
     {
       "title": "Recipe title",
       "description": "Brief description",
-      "cuisine": "Type of cuisine (Italian, Mexican, etc.)",
-      "protein": "Main protein (Chicken, Beef, Fish, Vegetarian, etc.)",
+      "cuisine": "Type of cuisine",
+      "protein": "Main protein",
       "cookingTime": 30,
-      "ingredients": ["ingredient 1", "ingredient 2", ...],
+      "ingredients": ["ingredient 1", "ingredient 2"],
       "instructions": "Step by step instructions"
     }
     
     Requirements:
-    - Ensure all ingredients are for serving 4 people
-    - Replace any seed oils (canola, vegetable, sunflower) with EVOO or avocado oil
-    - Make sure ingredients are clearly listed
-    - Combine the cooking instructions into a clear paragraph
+    - Ensure ingredients serve 4 people
+    - Replace seed oils with EVOO or avocado oil
+    - Extract the ACTUAL recipe from this specific URL
   `;
+
+  const completion = await openai.chat.completions.create({
+    model: "grok-2-1212",
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_object" },
+    max_tokens: 1000
+  });
+
+  const result = JSON.parse(completion.choices[0].message.content || "{}");
   
-  try {
-    // Use XAI to parse the content
-    const OpenAI = (await import("openai")).default;
-    const openai = new OpenAI({ 
-      baseURL: "https://api.x.ai/v1", 
-      apiKey: process.env.XAI_API_KEY 
-    });
-
-    const completion = await openai.chat.completions.create({
-      model: "grok-2-1212",
-      messages: [
-        { role: "user", content: prompt }
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 1000
-    });
-
-    const result = JSON.parse(completion.choices[0].message.content || "{}");
-    
-    return {
-      title: result.title || "Recipe",
-      description: result.description || "",
-      cuisine: result.cuisine || "",
-      protein: result.protein || "",
-      cookingTime: result.cookingTime || null,
-      ingredients: Array.isArray(result.ingredients) ? result.ingredients : [],
-      instructions: result.instructions || ""
-    };
-  } catch (error) {
-    console.error("Error parsing recipe with AI:", error);
-    throw new Error("Failed to parse recipe content");
-  }
+  return {
+    title: result.title || "Recipe",
+    description: result.description || "",
+    cuisine: result.cuisine || "",
+    protein: result.protein || "",
+    cookingTime: result.cookingTime || null,
+    ingredients: Array.isArray(result.ingredients) ? result.ingredients : [],
+    instructions: result.instructions || ""
+  };
 }
