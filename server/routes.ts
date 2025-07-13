@@ -680,19 +680,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "URL is required" });
       }
 
-      // Use XAI to parse the recipe from the URL
-      const response = await fetch(url);
+      console.log(`Parsing recipe from URL: ${url}`);
+
+      // Fetch the webpage with proper headers
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'DNT': '1',
+          'Connection': 'keep-alive',
+          'Upgrade-Insecure-Requests': '1',
+        }
+      });
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch recipe from URL");
+        throw new Error(`Failed to fetch recipe from URL: ${response.status} ${response.statusText}`);
       }
       
       const html = await response.text();
+      console.log(`Fetched HTML length: ${html.length} characters`);
       
-      // Use Grok to parse the recipe from HTML
-      const { generateMealSuggestions } = await import("./grok");
-      
-      // Extract recipe information using AI
+      // Extract recipe information using improved parsing
       const parsedRecipe = await parseRecipeFromHtml(html, url);
+      console.log(`Parsed recipe title: ${parsedRecipe.title}`);
       
       res.json(parsedRecipe);
     } catch (error) {
@@ -726,30 +738,62 @@ async function parseRecipeFromHtml(html: string, sourceUrl: string) {
 
 // Extract JSON-LD structured data from HTML
 function extractStructuredData(html: string) {
+  console.log("Looking for structured data in HTML...");
+  
   // Look for JSON-LD script tags with recipe schema
   const jsonLdMatches = html.match(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>(.*?)<\/script>/gis);
   
-  if (!jsonLdMatches) return null;
+  if (!jsonLdMatches) {
+    console.log("No JSON-LD script tags found");
+    return null;
+  }
   
-  for (const match of jsonLdMatches) {
+  console.log(`Found ${jsonLdMatches.length} JSON-LD script tags`);
+  
+  for (let i = 0; i < jsonLdMatches.length; i++) {
+    const match = jsonLdMatches[i];
     try {
       const jsonContent = match.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
       const data = JSON.parse(jsonContent);
+      
+      console.log(`Processing JSON-LD ${i + 1}:`, JSON.stringify(data, null, 2).substring(0, 500) + "...");
       
       // Handle array of structured data
       const items = Array.isArray(data) ? data : [data];
       
       for (const item of items) {
-        if (item['@type'] === 'Recipe' || (item['@graph'] && item['@graph'].find((g: any) => g['@type'] === 'Recipe'))) {
-          const recipe = item['@type'] === 'Recipe' ? item : item['@graph'].find((g: any) => g['@type'] === 'Recipe');
-          if (recipe) return recipe;
+        // Check for Recipe type directly
+        if (item['@type'] === 'Recipe') {
+          console.log("Found Recipe in structured data");
+          return item;
+        }
+        
+        // Check for Recipe in @graph array
+        if (item['@graph'] && Array.isArray(item['@graph'])) {
+          const recipe = item['@graph'].find((g: any) => g['@type'] === 'Recipe');
+          if (recipe) {
+            console.log("Found Recipe in @graph");
+            return recipe;
+          }
+        }
+        
+        // Check for nested arrays or objects that might contain Recipe
+        if (Array.isArray(item)) {
+          for (const subItem of item) {
+            if (subItem['@type'] === 'Recipe') {
+              console.log("Found Recipe in nested array");
+              return subItem;
+            }
+          }
         }
       }
     } catch (e) {
+      console.log(`Error parsing JSON-LD ${i + 1}:`, e.message);
       continue; // Try next script tag
     }
   }
   
+  console.log("No Recipe structured data found");
   return null;
 }
 
@@ -894,58 +938,92 @@ function determineProtein(ingredients: string[]): string {
 
 // Fallback AI parsing for when structured data isn't available
 async function parseWithAI(html: string, sourceUrl: string) {
+  console.log("Falling back to AI parsing...");
+  
   const OpenAI = (await import("openai")).default;
   const openai = new OpenAI({ 
     baseURL: "https://api.x.ai/v1", 
     apiKey: process.env.XAI_API_KEY 
   });
 
-  // Clean HTML and extract main content
-  const cleanHtml = html
+  // More targeted cleaning to preserve recipe content
+  let cleanHtml = html
     .replace(/<script[^>]*>.*?<\/script>/gis, '')
     .replace(/<style[^>]*>.*?<\/style>/gis, '')
+    .replace(/<nav[^>]*>.*?<\/nav>/gis, '')
+    .replace(/<header[^>]*>.*?<\/header>/gis, '')
+    .replace(/<footer[^>]*>.*?<\/footer>/gis, '')
+    .replace(/<aside[^>]*>.*?<\/aside>/gis, '');
+
+  // Look for recipe-specific content sections
+  const recipeMatches = cleanHtml.match(/<div[^>]*recipe[^>]*>.*?<\/div>/gis) ||
+                       cleanHtml.match(/<article[^>]*recipe[^>]*>.*?<\/article>/gis) ||
+                       cleanHtml.match(/<section[^>]*recipe[^>]*>.*?<\/section>/gis);
+  
+  if (recipeMatches && recipeMatches.length > 0) {
+    console.log("Found recipe-specific content sections");
+    cleanHtml = recipeMatches.join(' ');
+  }
+
+  // Final cleanup
+  cleanHtml = cleanHtml
     .replace(/<[^>]*>/g, ' ')
     .replace(/\s+/g, ' ')
-    .substring(0, 6000);
+    .trim();
+
+  // Take a larger chunk to ensure we capture the full recipe
+  const textContent = cleanHtml.substring(0, 8000);
+  
+  console.log(`Using text content length: ${textContent.length} chars`);
 
   const prompt = `
-    Extract recipe information from this website content for "${sourceUrl}":
+    I need you to extract the EXACT recipe from this specific webpage: ${sourceUrl}
     
-    ${cleanHtml}
+    Website content:
+    ${textContent}
     
-    Return ONLY a JSON object with these exact fields:
+    This URL should contain a specific recipe. Please find and extract ONLY that recipe's information.
+    
+    Return a JSON object with these exact fields:
     {
-      "title": "Recipe title",
-      "description": "Brief description",
-      "cuisine": "Type of cuisine",
-      "protein": "Main protein",
+      "title": "Exact recipe title from the page",
+      "description": "Recipe description or summary",
+      "cuisine": "Type of cuisine (Italian, Mexican, etc.)",
+      "protein": "Main protein (Chicken, Beef, Fish, Vegetarian, etc.)",
       "cookingTime": 30,
-      "ingredients": ["ingredient 1", "ingredient 2"],
-      "instructions": "Step by step instructions"
+      "ingredients": ["ingredient 1 for 4 servings", "ingredient 2 for 4 servings"],
+      "instructions": "Complete cooking instructions"
     }
     
     Requirements:
-    - Ensure ingredients serve 4 people
-    - Replace seed oils with EVOO or avocado oil
-    - Extract the ACTUAL recipe from this specific URL
+    - Find the MAIN recipe on this page, not random content
+    - Scale ingredients to serve exactly 4 people
+    - Replace any seed oils (canola, vegetable, sunflower) with EVOO or avocado oil
+    - Extract the actual recipe title from the page, not a generic name
   `;
 
-  const completion = await openai.chat.completions.create({
-    model: "grok-2-1212",
-    messages: [{ role: "user", content: prompt }],
-    response_format: { type: "json_object" },
-    max_tokens: 1000
-  });
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "grok-2-1212",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+      max_tokens: 1200
+    });
 
-  const result = JSON.parse(completion.choices[0].message.content || "{}");
-  
-  return {
-    title: result.title || "Recipe",
-    description: result.description || "",
-    cuisine: result.cuisine || "",
-    protein: result.protein || "",
-    cookingTime: result.cookingTime || null,
-    ingredients: Array.isArray(result.ingredients) ? result.ingredients : [],
-    instructions: result.instructions || ""
-  };
+    const result = JSON.parse(completion.choices[0].message.content || "{}");
+    console.log("AI parsing result:", result.title);
+    
+    return {
+      title: result.title || "Recipe",
+      description: result.description || "",
+      cuisine: result.cuisine || "",
+      protein: result.protein || "",
+      cookingTime: result.cookingTime || null,
+      ingredients: Array.isArray(result.ingredients) ? result.ingredients : [],
+      instructions: result.instructions || ""
+    };
+  } catch (error) {
+    console.error("AI parsing error:", error);
+    throw error;
+  }
 }
