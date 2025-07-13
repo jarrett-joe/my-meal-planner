@@ -151,12 +151,22 @@ export default function Subscribe() {
     try {
       const response = await apiRequest("POST", "/api/create-subscription", {
         planId: plan.id,
-        priceId: `price_${plan.id}`, // This will need to match your Stripe price IDs
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create subscription');
+      }
+      
       const data = await response.json();
       setClientSecret(data.clientSecret);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating subscription:", error);
+      toast({
+        title: "Subscription Error",
+        description: error.message || "Failed to create subscription. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoadingPayment(false);
     }

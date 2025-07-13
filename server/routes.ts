@@ -191,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("Subscription error:", error);
-      return res.status(400).json({ error: { message: error.message } });
+      return res.status(400).json({ message: error.message });
     }
   });
 
@@ -271,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("Stripe subscription error:", error);
-      return res.status(400).json({ error: { message: error.message } });
+      return res.status(400).json({ message: error.message });
     }
   });
 
