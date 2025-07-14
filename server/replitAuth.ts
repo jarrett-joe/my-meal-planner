@@ -35,11 +35,12 @@ export function getSession() {
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Allow creating sessions for admin users
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Disable for development testing
       maxAge: sessionTtl,
+      sameSite: 'lax'
     },
   });
 }

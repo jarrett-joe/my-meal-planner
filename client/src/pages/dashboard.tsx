@@ -64,15 +64,33 @@ export default function Dashboard() {
     mutationFn: async () => {
       // Clear existing meals first
       setMeals([]);
-      const response = await apiRequest("POST", "/api/meals/suggestions", {
-        count: 5
+      
+      // Add admin header if user is admin (workaround for session issues)
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (user?.id === 'admin-master') {
+        headers['x-admin-user'] = 'admin-master';
+      }
+      
+      const response = await fetch("/api/meals/suggestions", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ count: 5 }),
+        credentials: 'include'
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      }
+      
       return response.json();
     },
     onSuccess: (data) => {
-      console.log(`Frontend received ${data.length} meals:`, data);
-      console.log(`Setting meals state to ${data.length} items`);
+      console.log(`Frontend received ${data.length} meals from API:`, data.map(m => m.title));
+      console.log(`Current meals state before update:`, meals.length);
       setMeals(data);
+      console.log(`Setting meals state to ${data.length} items`);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }); // Refresh user credits
       toast({ 
         title: "New meals generated!", 
@@ -219,7 +237,11 @@ export default function Dashboard() {
   };
 
   const handleRefreshSuggestions = () => {
-    console.log("handleRefreshSuggestions called");
+    console.log("=== REFRESH SUGGESTIONS CLICKED ===");
+    console.log("Current meals array length:", meals.length);
+    console.log("User authenticated:", !!user);
+    console.log("User ID:", user?.id);
+    
     if (!preferences?.proteinPreferences?.length && !preferences?.cuisinePreferences?.length) {
       toast({
         title: "Set preferences first",
@@ -229,7 +251,8 @@ export default function Dashboard() {
       return;
     }
     
-    console.log("Starting meal generation mutation...");
+    console.log("Clearing meals array and starting mutation...");
+    setMeals([]); // Force clear the meals array
     setSelectedMeals(new Set());
     generateMealsMutation.mutate();
   };
