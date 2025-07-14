@@ -66,6 +66,7 @@ export default function Dashboard() {
     },
     onSuccess: (data) => {
       console.log(`Frontend received ${data.length} meals:`, data);
+      console.log(`Setting meals state to ${data.length} items`);
       setMeals(data);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }); // Refresh user credits
       toast({ 
@@ -443,17 +444,20 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {meals.map((meal: Meal) => (
-                    <MealCard
-                      key={meal.id}
-                      meal={meal}
-                      selected={selectedMeals.has(meal.id)}
-                      onToggle={() => toggleMealSelection(meal.id)}
-                      isFavorite={favorites.some((fav: any) => fav.meal.id === meal.id)}
-                      onFavoriteToggle={handleFavoriteToggle}
-                      onAddToCalendar={handleAddToCalendar}
-                    />
-                  ))}
+                  {(() => {
+                    console.log(`Rendering ${meals.length} meal cards in UI`);
+                    return meals.map((meal: Meal) => (
+                      <MealCard
+                        key={meal.id}
+                        meal={meal}
+                        selected={selectedMeals.has(meal.id)}
+                        onToggle={() => toggleMealSelection(meal.id)}
+                        isFavorite={favorites.some((fav: any) => fav.meal.id === meal.id)}
+                        onFavoriteToggle={handleFavoriteToggle}
+                        onAddToCalendar={handleAddToCalendar}
+                      />
+                    ));
+                  })()}
                 </div>
               )}
             </CardContent>
