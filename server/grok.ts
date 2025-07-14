@@ -24,7 +24,7 @@ export async function generateMealSuggestions(
   proteinPreferences: string[],
   cuisinePreferences: string[],
   allergyPreferences: string[] = [],
-  count = 6
+  count = 5
 ): Promise<MealSuggestion[]> {
   try {
     const prompt = `You are a professional chef and meal planning expert creating original recipes for a family of 4 people. Use these high-quality food websites as inspiration for cooking styles and flavor profiles:
@@ -129,6 +129,7 @@ Respond with a JSON object containing a "meals" array in this exact format:
     }
 
     // Validate and clean the data
+    console.log(`AI returned ${meals.length} meals, trimming to ${count}`);
     return meals.slice(0, count).map(meal => {
       const cleanMeal = {
         title: meal.title || "Untitled Meal",

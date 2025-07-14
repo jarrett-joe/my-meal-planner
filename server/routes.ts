@@ -397,7 +397,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      res.json(savedMeals.filter(Boolean));
+      const finalMeals = savedMeals.filter(Boolean);
+      console.log(`Returning ${finalMeals.length} meals to frontend`);
+      res.json(finalMeals);
     } catch (error) {
       console.error("Error generating meal suggestions:", error);
       res.status(500).json({ message: "Failed to generate meal suggestions" });
