@@ -118,13 +118,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', async (req: any, res) => {
     try {
+      console.log('Auth check - session:', req.session?.adminUser?.id, 'regular auth:', req.isAuthenticated?.());
+      
       // Check for admin session first
-      if (req.session.adminUser) {
+      if (req.session?.adminUser) {
+        console.log('Admin session found, returning admin user');
         return res.json(req.session.adminUser);
       }
 
       // Regular auth check
       if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        console.log('No valid auth found');
         return res.status(401).json({ message: "Unauthorized" });
       }
 
