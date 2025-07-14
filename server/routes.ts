@@ -318,7 +318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const proteinPreferences = preferences?.proteinPreferences || [];
       const cuisinePreferences = preferences?.cuisinePreferences || [];
       const allergyPreferences = preferences?.allergyPreferences || [];
-      const count = req.body.count || 6;
+      const count = req.body.count || 5;
 
       // Skip credit check for admin users and unlimited users
       if (user.id !== 'admin-master' && user.subscriptionPlan !== 'unlimited' && user.mealCredits < count) {

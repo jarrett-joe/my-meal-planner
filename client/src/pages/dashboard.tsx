@@ -61,7 +61,7 @@ export default function Dashboard() {
       
       try {
         const response = await apiRequest("POST", "/api/meals/suggestions", {
-          count: 8
+          count: 5
         });
         return response.json();
       } catch (error: any) {
