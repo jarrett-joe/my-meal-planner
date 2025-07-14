@@ -51,29 +51,58 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  // Fetch suggested meals - disabled auto fetch, now manual only
-  const { data: meals = [], isLoading: mealsLoading, refetch: refetchMeals, error: mealsError } = useQuery({
-    queryKey: ["/api/meals", preferences],
-    queryFn: async () => {
-      if (!preferences?.proteinPreferences?.length && !preferences?.cuisinePreferences?.length) {
-        return [];
+  // Store generated meals state
+  const [meals, setMeals] = useState<Meal[]>([]);
+
+  // Meal generation mutation with proper error handling
+  const generateMealsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/meals/suggestions", {
+        count: 5
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setMeals(data);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }); // Refresh user credits
+      toast({ 
+        title: "New meals generated!", 
+        description: `Generated ${data.length} new meal suggestions.` 
+      });
+    },
+    onError: (error: any) => {
+      console.error("Meal generation error:", error);
+      
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Session expired",
+          description: "Please log in again to continue.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 1000);
+        return;
       }
       
-      try {
-        const response = await apiRequest("POST", "/api/meals/suggestions", {
-          count: 5
+      if (error.message.includes('402') || error.message.includes('Insufficient') || error.message.includes('credits')) {
+        toast({
+          title: "No meal credits remaining",
+          description: "Subscribe to generate more meals.",
+          variant: "destructive",
         });
-        return response.json();
-      } catch (error: any) {
-        if (error.message.includes('402') || error.message.includes('Insufficient meal credits')) {
-          // Handle insufficient credits gracefully
-          return [];
-        }
-        throw error;
+        setTimeout(() => {
+          window.location.href = "/subscribe";
+        }, 2000);
+        return;
       }
+      
+      toast({
+        title: "Generation failed",
+        description: "Unable to generate meals. Please try again.",
+        variant: "destructive",
+      });
     },
-    enabled: false, // Disable automatic fetching - now manual only
-    retry: false,
   });
 
   // Update preferences mutation
@@ -191,7 +220,7 @@ export default function Dashboard() {
     }
     
     setSelectedMeals(new Set());
-    refetchMeals();
+    generateMealsMutation.mutate();
   };
 
   const handleFavoriteToggle = (mealId: number, isFavorite: boolean) => {
@@ -370,15 +399,15 @@ export default function Dashboard() {
                 <Button 
                   variant="outline" 
                   onClick={handleRefreshSuggestions}
-                  disabled={mealsLoading}
+                  disabled={generateMealsMutation.isPending}
                 >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${mealsLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-4 h-4 mr-2 ${generateMealsMutation.isPending ? 'animate-spin' : ''}`} />
                   Search for Meals
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              {mealsLoading ? (
+              {generateMealsMutation.isPending ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="animate-pulse">
@@ -400,10 +429,10 @@ export default function Dashboard() {
                   </p>
                   <Button 
                     onClick={handleRefreshSuggestions}
-                    disabled={mealsLoading || (!preferences?.proteinPreferences?.length && !preferences?.cuisinePreferences?.length)}
+                    disabled={generateMealsMutation.isPending || (!preferences?.proteinPreferences?.length && !preferences?.cuisinePreferences?.length)}
                     size="lg"
                   >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${mealsLoading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`w-4 h-4 mr-2 ${generateMealsMutation.isPending ? 'animate-spin' : ''}`} />
                     Search for Meals
                   </Button>
                 </div>
