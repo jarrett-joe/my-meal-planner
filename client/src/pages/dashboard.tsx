@@ -53,6 +53,11 @@ export default function Dashboard() {
 
   // Store generated meals state
   const [meals, setMeals] = useState<Meal[]>([]);
+  
+  // Clear meals on component mount to prevent stale data
+  useEffect(() => {
+    setMeals([]);
+  }, []);
 
   // Meal generation mutation with proper error handling
   const generateMealsMutation = useMutation({

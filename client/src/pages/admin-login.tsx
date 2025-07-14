@@ -32,10 +32,10 @@ export default function AdminLogin() {
         title: "Login Successful",
         description: "Welcome back, Master Admin!",
       });
-      // Refresh user data
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      // Redirect to dashboard
-      window.location.href = "/";
+      // Force full page reload to ensure session is recognized
+      setTimeout(() => {
+        window.location.replace("/");
+      }, 1000);
     },
     onError: () => {
       toast({
