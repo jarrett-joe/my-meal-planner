@@ -213,6 +213,7 @@ export default function Dashboard() {
   };
 
   const handleRefreshSuggestions = () => {
+    console.log("handleRefreshSuggestions called");
     if (!preferences?.proteinPreferences?.length && !preferences?.cuisinePreferences?.length) {
       toast({
         title: "Set preferences first",
@@ -222,6 +223,7 @@ export default function Dashboard() {
       return;
     }
     
+    console.log("Starting meal generation mutation...");
     setSelectedMeals(new Set());
     generateMealsMutation.mutate();
   };
