@@ -318,16 +318,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const proteinPreferences = preferences?.proteinPreferences || [];
       const cuisinePreferences = preferences?.cuisinePreferences || [];
       const allergyPreferences = preferences?.allergyPreferences || [];
-      const count = req.body.count || 5;
+      let count = req.body.count || 5;
 
       // Skip credit check for admin users and unlimited users
-      if (user.id !== 'admin-master' && user.subscriptionPlan !== 'unlimited' && user.mealCredits < count) {
-        return res.status(402).json({ 
-          message: "Insufficient meal credits",
-          creditsAvailable: user.mealCredits,
-          creditsRequired: count,
-          redirectTo: "/subscribe"
-        });
+      if (user.id !== 'admin-master' && user.subscriptionPlan !== 'unlimited') {
+        if (user.mealCredits <= 0) {
+          return res.status(402).json({ 
+            message: "No meal credits remaining",
+            creditsAvailable: user.mealCredits,
+            creditsRequired: count,
+            redirectTo: "/subscribe"
+          });
+        }
+        
+        // Adjust count to available credits if user doesn't have enough for full request
+        if (user.mealCredits < count) {
+          count = user.mealCredits;
+          console.log(`Adjusting meal count from ${req.body.count || 5} to ${count} based on available credits`);
+        }
       }
 
       const suggestions = await generateMealSuggestions(
