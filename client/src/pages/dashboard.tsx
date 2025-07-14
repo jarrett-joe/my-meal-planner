@@ -57,12 +57,15 @@ export default function Dashboard() {
   // Meal generation mutation with proper error handling
   const generateMealsMutation = useMutation({
     mutationFn: async () => {
+      // Clear existing meals first
+      setMeals([]);
       const response = await apiRequest("POST", "/api/meals/suggestions", {
         count: 5
       });
       return response.json();
     },
     onSuccess: (data) => {
+      console.log(`Frontend received ${data.length} meals:`, data);
       setMeals(data);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }); // Refresh user credits
       toast({ 
