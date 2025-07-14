@@ -275,6 +275,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple auth test endpoint
+  app.get('/api/test-auth', requireAuth, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      res.json({ 
+        authenticated: true, 
+        userId, 
+        userEmail: user?.email,
+        mealCredits: user?.mealCredits 
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // User preferences
   app.get('/api/preferences', requireAuth, async (req: any, res) => {
     try {
@@ -307,7 +323,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/meals/suggestions', requireAuth, async (req: any, res) => {
     try {
       const userId = getUserId(req);
+      console.log(`Meal generation request from user: ${userId}`);
       const user = await storage.getUser(userId);
+      console.log(`User found: ${user ? `${user.email} with ${user.mealCredits} credits` : 'not found'}`);
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -338,6 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      console.log(`Generating ${count} meals for user ${userId}`);
       const suggestions = await generateMealSuggestions(
         proteinPreferences,
         cuisinePreferences,
