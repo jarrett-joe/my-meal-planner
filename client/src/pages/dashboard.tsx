@@ -294,19 +294,27 @@ export default function Dashboard() {
     return null;
   }
 
-  // Check subscription status
-  if (user.subscriptionStatus !== 'active') {
+  // Check subscription status - allow trial users with credits and active subscribers
+  const hasAccess = user.subscriptionStatus === 'active' || 
+                   (user.subscriptionStatus === 'trial' && (user.mealCredits || 0) > 0);
+  
+  if (!hasAccess) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="pt-6 text-center">
             <ChefHat className="h-16 w-16 text-primary mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Subscription Required</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              {user.subscriptionStatus === 'trial' ? 'Trial Expired' : 'Subscription Required'}
+            </h1>
             <p className="text-gray-600 mb-6">
-              You need an active subscription to access the meal planning features.
+              {user.subscriptionStatus === 'trial' 
+                ? 'Your free trial meals have been used up. Subscribe to continue planning meals!'
+                : 'You need an active subscription to access the meal planning features.'
+              }
             </p>
             <Button onClick={() => window.location.href = "/subscribe"}>
-              Subscribe Now
+              {user.subscriptionStatus === 'trial' ? 'Subscribe to Continue' : 'Subscribe Now'}
             </Button>
           </CardContent>
         </Card>
