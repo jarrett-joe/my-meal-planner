@@ -25,6 +25,7 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Display recipe images when available
 
 ## Recent Changes
+- **January 14, 2025**: ✅ **FIXED** - Resolved user confusion with authentication flow by removing misleading email/password signup forms and clearly explaining OAuth-based login through existing accounts (Google, GitHub, etc.)
 - **January 13, 2025**: ✅ **UPDATED** - Changed meal generation from 8 to 5 meals per request to align with subscription plans (all divisible by 5)
 - **January 13, 2025**: ✅ **FIXED** - Subscription plan selection now working properly with correct Stripe integration and error handling
 - **January 13, 2025**: ✅ **SECURITY** - Updated Vite to version 5.4.19 to patch CVE-2025-30208 vulnerability

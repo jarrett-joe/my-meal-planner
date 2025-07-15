@@ -550,21 +550,20 @@ export default function Landing() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center">Start Your Free Trial</DialogTitle>
-            <p className="text-center text-gray-600">No credit card required</p>
+            <p className="text-center text-gray-600">10 free meals - no credit card required</p>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div>
-              <Label>Full Name</Label>
-              <Input placeholder="Enter your full name" />
+          <div className="space-y-4 text-center">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-900 mb-2">Quick & Secure Sign Up</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Sign up instantly using your existing account from Google, GitHub, Apple, or other providers.
+                No need to create a new password!
+              </p>
             </div>
-            <div>
-              <Label>Email Address</Label>
-              <Input type="email" placeholder="Enter your email" />
-            </div>
-            <div>
-              <Label>Password</Label>
-              <Input type="password" placeholder="Create a password" />
+            
+            <div className="text-xs text-gray-500">
+              By continuing, you'll be redirected to our secure authentication provider
             </div>
           </div>
           
@@ -575,7 +574,7 @@ export default function Landing() {
               window.location.href = "/api/login";
             }}
           >
-            Start Free Trial
+            Continue with Secure Login
           </Button>
           
           <p className="text-center text-sm text-gray-600">
@@ -587,7 +586,7 @@ export default function Landing() {
               }}
               className="text-primary hover:underline"
             >
-              Sign in
+              Sign in instead
             </button>
           </p>
         </DialogContent>
@@ -598,26 +597,21 @@ export default function Landing() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center">Welcome Back</DialogTitle>
-            <p className="text-center text-gray-600">Sign in to your account</p>
+            <p className="text-center text-gray-600">Sign in with your existing account</p>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div>
-              <Label>Email Address</Label>
-              <Input type="email" placeholder="Enter your email" />
+          <div className="space-y-4 text-center">
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-900 mb-2">Secure Authentication</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Use your Google, GitHub, Apple, or other existing accounts to sign in securely. 
+                We don't store passwords - everything is handled through trusted providers.
+              </p>
             </div>
-            <div>
-              <Label>Password</Label>
-              <Input type="password" placeholder="Enter your password" />
+            
+            <div className="text-xs text-gray-500">
+              You'll be redirected to your authentication provider
             </div>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Checkbox id="remember" />
-              <Label htmlFor="remember" className="text-sm">Remember me</Label>
-            </div>
-            <button className="text-sm text-primary hover:underline">Forgot password?</button>
           </div>
           
           <Button 
@@ -627,11 +621,11 @@ export default function Landing() {
               window.location.href = "/api/login";
             }}
           >
-            Sign In
+            Continue to Sign In
           </Button>
           
           <p className="text-center text-sm text-gray-600">
-            Don't have an account?{" "}
+            Need to create an account?{" "}
             <button 
               onClick={() => {
                 setShowLogin(false);
@@ -639,7 +633,7 @@ export default function Landing() {
               }}
               className="text-primary hover:underline"
             >
-              Sign up
+              Start free trial
             </button>
           </p>
         </DialogContent>
