@@ -44,13 +44,22 @@ export default function Auth() {
 
   const signupMutation = useMutation({
     mutationFn: async (userData: { email: string; password: string; firstName?: string; lastName?: string }) => {
-      return await apiRequest("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
+      console.log("Attempting signup with data:", userData);
+      try {
+        const response = await apiRequest("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
+        });
+        console.log("Signup response:", response);
+        return response;
+      } catch (error) {
+        console.error("Signup error:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
+      console.log("Signup successful");
       toast({
         title: "Account created!",
         description: "Welcome to Plan My Plates! You have 10 free trial meals to get started.",
@@ -58,6 +67,7 @@ export default function Auth() {
       navigate("/");
     },
     onError: (error: any) => {
+      console.error("Signup mutation error:", error);
       toast({
         title: "Signup failed",
         description: error.message || "Please try again.",
@@ -68,6 +78,7 @@ export default function Auth() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submitted", { isLogin, email, firstName, lastName });
     
     if (!email || !password) {
       toast({
@@ -79,8 +90,10 @@ export default function Auth() {
     }
 
     if (isLogin) {
+      console.log("Attempting login");
       loginMutation.mutate({ email, password });
     } else {
+      console.log("Attempting signup");
       signupMutation.mutate({ email, password, firstName, lastName });
     }
   };
