@@ -131,8 +131,12 @@ export default function Landing() {
               <a href="#features" className="text-gray-600 hover:text-primary transition-colors">Features</a>
               <a href="#pricing" className="text-gray-600 hover:text-primary transition-colors">Pricing</a>
               <a href="#how-it-works" className="text-gray-600 hover:text-primary transition-colors">How It Works</a>
-              <Button variant="ghost" onClick={() => setShowLogin(true)}>Sign In</Button>
-              <Button onClick={() => setShowSignup(true)}>Get Started</Button>
+              <Link href="/auth">
+                <Button variant="ghost">Sign In</Button>
+              </Link>
+              <Link href="/auth">
+                <Button>Get Started</Button>
+              </Link>
               <a href="/admin" className="text-xs text-gray-400 hover:text-gray-600">Admin</a>
             </div>
           </div>
@@ -150,9 +154,11 @@ export default function Landing() {
             Select your protein and cuisine preferences, let AI find perfect meals for your week, and get a comprehensive grocery list instantly.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" variant="secondary" onClick={() => setShowSignup(true)}>
-              Start Free Trial
-            </Button>
+            <Link href="/auth">
+              <Button size="lg" variant="secondary">
+                Start Free Trial
+              </Button>
+            </Link>
             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
               <Play className="w-4 h-4 mr-2" />
               Watch Demo
@@ -555,15 +561,15 @@ export default function Landing() {
           
           <div className="space-y-4 text-center">
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-2">Quick & Secure Sign Up</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">No Account Required!</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Sign up instantly using your existing account from Google, GitHub, Apple, or other providers.
-                No need to create a new password!
+                Start using Plan My Plates instantly - no signup, no passwords, no hassle.
+                Just click below and begin planning your meals!
               </p>
             </div>
             
             <div className="text-xs text-gray-500">
-              By continuing, you'll be redirected to our secure authentication provider
+              Your preferences and favorites will be saved automatically
             </div>
           </div>
           
@@ -571,10 +577,10 @@ export default function Landing() {
             className="w-full" 
             onClick={() => {
               setShowSignup(false);
-              window.location.href = "/api/login";
+              window.location.href = "/dashboard";
             }}
           >
-            Continue with Secure Login
+            Start Planning Meals Now
           </Button>
           
           <p className="text-center text-sm text-gray-600">
@@ -597,20 +603,20 @@ export default function Landing() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center">Welcome Back</DialogTitle>
-            <p className="text-center text-gray-600">Sign in with your existing account</p>
+            <p className="text-center text-gray-600">Access your meal planning dashboard</p>
           </DialogHeader>
           
           <div className="space-y-4 text-center">
             <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-900 mb-2">Secure Authentication</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Welcome Back!</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Use your Google, GitHub, Apple, or other existing accounts to sign in securely. 
-                We don't store passwords - everything is handled through trusted providers.
+                Your meal planning data is automatically saved and ready to go.
+                No passwords to remember - just start planning!
               </p>
             </div>
             
             <div className="text-xs text-gray-500">
-              You'll be redirected to your authentication provider
+              Your preferences and favorites are waiting for you
             </div>
           </div>
           
@@ -618,10 +624,10 @@ export default function Landing() {
             className="w-full"
             onClick={() => {
               setShowLogin(false);
-              window.location.href = "/api/login";
+              window.location.href = "/dashboard";
             }}
           >
-            Continue to Sign In
+            Continue to Dashboard
           </Button>
           
           <p className="text-center text-sm text-gray-600">

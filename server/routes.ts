@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, requireAuth } from "./emailAuth";
 import { generateMealSuggestions, generateGroceryList } from "./grok";
 import { 
   insertUserPreferencesSchema,
@@ -31,11 +31,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Simple admin credentials (you can change these)
     if (username === 'admin' && password === 'planmyplates2025') {
       // Create or get admin user
-      let adminUser = await storage.getUser('admin-master');
+      let adminUser = await storage.getUserByEmail('admin@planmyplates.com');
       if (!adminUser) {
-        adminUser = await storage.upsertUser({
-          id: 'admin-master',
+        adminUser = await storage.createUser({
           email: 'admin@planmyplates.com',
+          password: 'planmyplates2025',
           firstName: 'Master',
           lastName: 'Admin',
           profileImageUrl: null,
@@ -46,13 +46,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Set session and also create preferences for admin
-      req.session.adminUser = adminUser;
+      (req.session as any).userId = adminUser.id;
       
       // Ensure admin has some default preferences for testing
-      const adminPrefs = await storage.getUserPreferences('admin-master');
+      const adminPrefs = await storage.getUserPreferences(adminUser.id);
       if (!adminPrefs) {
         await storage.upsertUserPreferences({
-          userId: 'admin-master',
+          userId: adminUser.id,
           proteinPreferences: ['Chicken', 'Fish', 'Beef'],
           cuisinePreferences: ['Mediterranean', 'Italian', 'American'],
           allergyPreferences: []
@@ -60,15 +60,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Created default preferences for admin');
       }
       
-      // Force session save
-      req.session.save((err: any) => {
-        if (err) {
-          console.error('Error saving admin session:', err);
-          return res.status(500).json({ message: "Session save failed" });
-        }
-        console.log('Admin session saved successfully');
-        res.json({ success: true, user: adminUser });
-      });
+      console.log('Admin session saved successfully');
+      res.json({ success: true, user: adminUser });
     } else {
       res.status(401).json({ message: "Invalid admin credentials" });
     }
@@ -76,7 +69,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin logout
   app.post('/api/auth/admin-logout', (req, res) => {
-    req.session.adminUser = null;
+    (req.session as any).userId = null;
     res.json({ success: true });
   });
 
@@ -84,20 +77,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/create-unlimited-user', async (req: any, res) => {
     try {
       // Check admin session
-      if (!req.session?.adminUser) {
+      if (!req.session?.userId) {
         return res.status(401).json({ message: "Admin access required" });
       }
 
-      const { userId, email, firstName, lastName } = req.body;
+      const { email, firstName, lastName } = req.body;
       
-      if (!userId || !email) {
-        return res.status(400).json({ message: "User ID and email are required" });
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
       }
 
       // Create or update user with unlimited credits
-      const unlimitedUser = await storage.upsertUser({
-        id: userId,
+      const unlimitedUser = await storage.createUser({
         email,
+        password: 'temp-password', // User will need to reset this
         firstName: firstName || null,
         lastName: lastName || null,
         profileImageUrl: null,
@@ -122,32 +115,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to get user ID from session or auth
   const getUserId = (req: any) => {
-    // Check admin header first (workaround)
-    if (req.headers['x-admin-user'] === 'admin-master') {
-      return 'admin-master';
-    }
-    if (req.session?.adminUser) {
-      return req.session.adminUser.id;
-    }
-    return req.user?.claims?.sub;
-  };
-
-  // Custom auth middleware that supports admin sessions
-  const requireAuth = (req: any, res: any, next: any) => {
-    console.log('requireAuth check - Session ID:', req.sessionID);
-    console.log('requireAuth check - admin session:', !!req.session?.adminUser);
-    console.log('requireAuth check - admin header:', req.headers['x-admin-user']);
-    
-    // Check if this is an admin user by checking a simple admin header (workaround for session issues)
-    const isAdminRequest = req.headers['x-admin-user'] === 'admin-master';
-    
-    if (req.session?.adminUser || isAdminRequest) {
-      console.log('Admin access granted, proceeding');
-      return next(); // Admin session is valid
-    }
-    
-    console.log('Checking regular auth...');
-    return isAuthenticated(req, res, next); // Use regular auth
+    // With no-auth system, just return the sessionId as user ID
+    return req.sessionId || req.user?.id;
   };
 
   // Auth routes

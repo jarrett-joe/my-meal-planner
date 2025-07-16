@@ -13,7 +13,7 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - 10 free trial meals for new users
 - Three subscription tiers: Basic (20 meals/$10), Standard (40 meals/$20), Premium (60 meals/$30)
 - Integrated calendar planning with favorites system
-- User authentication via Replit Auth
+- User authentication via email/password with bcryptjs
 - PostgreSQL database for data persistence
 
 ## User Preferences
@@ -25,8 +25,10 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Display recipe images when available
 
 ## Recent Changes
+- **January 16, 2025**: ✅ **MAJOR UPDATE** - Implemented full email/password authentication system with bcryptjs for better subscription tracking and user management. Database restructured with integer user IDs for improved relational integrity.
+- **January 16, 2025**: ✅ **COMPLETED** - Created dedicated auth page (/auth) with login/signup forms, replacing OAuth system for better payment integration control
+- **January 16, 2025**: ✅ **DATABASE** - Completely rebuilt PostgreSQL schema with proper integer foreign keys and email/password user system
 - **January 14, 2025**: ✅ **FIXED** - New users now directed to dashboard instead of subscription page after signup, allowing them to use their 10 free trial meals immediately
-- **January 14, 2025**: ✅ **FIXED** - Resolved user confusion with authentication flow by removing misleading email/password signup forms and clearly explaining OAuth-based login through existing accounts (Google, GitHub, etc.)
 - **January 13, 2025**: ✅ **UPDATED** - Changed meal generation from 8 to 5 meals per request to align with subscription plans (all divisible by 5)
 - **January 13, 2025**: ✅ **FIXED** - Subscription plan selection now working properly with correct Stripe integration and error handling
 - **January 13, 2025**: ✅ **SECURITY** - Updated Vite to version 5.4.19 to patch CVE-2025-30208 vulnerability
@@ -69,7 +71,7 @@ Plan My Plates is a subscription-based meal planning platform that helps familie
 - Frontend: React with TypeScript, Tailwind CSS, shadcn/ui components
 - Backend: Node.js with Express, using GROK API for meal generation
 - Database: PostgreSQL with Drizzle ORM
-- Authentication: Replit Auth with OpenID Connect
+- Authentication: Email/password with bcryptjs and session management
 - Payments: Stripe integration for subscriptions
 - Deployment: Replit platform
 

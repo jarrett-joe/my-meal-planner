@@ -289,9 +289,13 @@ export default function Dashboard() {
     );
   }
 
+  // User is always available with no-auth system
   if (!user) {
-    window.location.href = "/api/login";
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   // Check subscription status - allow trial users with credits and active subscribers

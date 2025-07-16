@@ -26,10 +26,11 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table (required for Replit Auth)
+// User storage table 
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
+  id: serial("id").primaryKey(),
+  email: varchar("email").unique().notNull(),
+  password: varchar("password").notNull(), // For email/password auth
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -46,7 +47,7 @@ export const users = pgTable("users", {
 // User preferences for meal planning
 export const userPreferences = pgTable("user_preferences", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   proteinPreferences: jsonb("protein_preferences").$type<string[]>().default([]),
   cuisinePreferences: jsonb("cuisine_preferences").$type<string[]>().default([]),
   allergyPreferences: jsonb("allergy_preferences").$type<string[]>().default([]),
@@ -69,7 +70,7 @@ export const meals = pgTable("meals", {
   instructions: text("instructions"),
   sourceUrl: varchar("source_url"),
   isUserGenerated: boolean("is_user_generated").default(false), // true for user uploads, false for AI
-  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }), // null for AI, user ID for uploads
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }), // null for AI, user ID for uploads
   createdAt: timestamp("created_at").defaultNow(),
 });
 
