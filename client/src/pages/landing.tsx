@@ -131,10 +131,10 @@ export default function Landing() {
               <a href="#features" className="text-gray-600 hover:text-primary transition-colors">Features</a>
               <a href="#pricing" className="text-gray-600 hover:text-primary transition-colors">Pricing</a>
               <a href="#how-it-works" className="text-gray-600 hover:text-primary transition-colors">How It Works</a>
-              <Link href="/auth">
+              <Link href="/direct-auth">
                 <Button variant="ghost">Sign In</Button>
               </Link>
-              <Link href="/auth">
+              <Link href="/direct-auth">
                 <Button>Get Started</Button>
               </Link>
               <a href="/admin" className="text-xs text-gray-400 hover:text-gray-600">Admin</a>
@@ -154,7 +154,7 @@ export default function Landing() {
             Select your protein and cuisine preferences, let AI find perfect meals for your week, and get a comprehensive grocery list instantly.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/auth">
+            <Link href="/direct-auth">
               <Button size="lg" variant="secondary">
                 Start Free Trial
               </Button>

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
 import Auth from "@/pages/auth";
+import DirectAuth from "@/pages/direct-auth";
 import Dashboard from "@/pages/dashboard";
 import Subscribe from "@/pages/subscribe";
 import Favorites from "@/pages/favorites";
@@ -24,6 +25,7 @@ function Router() {
         <>
           <Route path="/" component={Landing} />
           <Route path="/auth" component={Auth} />
+          <Route path="/direct-auth" component={DirectAuth} />
           <Route path="/admin" component={AdminLogin} />
         </>
       ) : (
