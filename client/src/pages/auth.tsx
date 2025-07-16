@@ -20,11 +20,42 @@ export default function Auth() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
-      return await apiRequest("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      });
+      console.log("Attempting login with credentials:", credentials);
+      try {
+        // Use XMLHttpRequest to bypass potential fetch interception
+        const response = await new Promise<Response>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/auth/login", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.withCredentials = true;
+          
+          xhr.onload = () => {
+            const response = new Response(xhr.responseText, {
+              status: xhr.status,
+              statusText: xhr.statusText,
+            });
+            resolve(response);
+          };
+          
+          xhr.onerror = () => {
+            reject(new Error("Network error"));
+          };
+          
+          xhr.send(JSON.stringify(credentials));
+        });
+        
+        console.log("Login response:", response);
+        
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`${response.status}: ${text}`);
+        }
+        
+        return response;
+      } catch (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
@@ -46,12 +77,35 @@ export default function Auth() {
     mutationFn: async (userData: { email: string; password: string; firstName?: string; lastName?: string }) => {
       console.log("Attempting signup with data:", userData);
       try {
-        const response = await apiRequest("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(userData),
+        // Use XMLHttpRequest to bypass potential fetch interception
+        const response = await new Promise<Response>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/auth/signup", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+          xhr.withCredentials = true;
+          
+          xhr.onload = () => {
+            const response = new Response(xhr.responseText, {
+              status: xhr.status,
+              statusText: xhr.statusText,
+            });
+            resolve(response);
+          };
+          
+          xhr.onerror = () => {
+            reject(new Error("Network error"));
+          };
+          
+          xhr.send(JSON.stringify(userData));
         });
+        
         console.log("Signup response:", response);
+        
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`${response.status}: ${text}`);
+        }
+        
         return response;
       } catch (error) {
         console.error("Signup error:", error);
