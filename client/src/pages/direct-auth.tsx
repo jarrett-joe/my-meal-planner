@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChefHat, Mail, Lock, User } from "lucide-react";
+import { Utensils, Mail, Lock, User } from "lucide-react";
 
 export default function DirectAuth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,12 +13,12 @@ export default function DirectAuth() {
   const [lastName, setLastName] = useState("");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-lg border-0">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <ChefHat className="h-8 w-8 text-orange-600 mr-2" />
-            <span className="text-2xl font-bold text-orange-600">Plan My Plates</span>
+            <Utensils className="h-8 w-8 text-primary mr-2" />
+            <span className="text-2xl font-bold text-gray-900">Plan My Plates</span>
           </div>
           <CardTitle className="text-2xl text-center">
             {isLogin ? "Welcome back" : "Create your account"}
@@ -28,6 +28,11 @@ export default function DirectAuth() {
               ? "Sign in to your account to access your meal plans" 
               : "Get started with 10 free trial meals"}
           </CardDescription>
+          {!isLogin && (
+            <p className="text-sm text-center text-gray-500 mt-2">
+              No credit card required • Start cooking today
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <form 
@@ -106,10 +111,10 @@ export default function DirectAuth() {
             
             <Button 
               type="submit" 
-              className="w-full bg-orange-600 hover:bg-orange-700"
+              className="w-full bg-primary hover:bg-primary/90"
               disabled={!email || !password}
             >
-              {isLogin ? "Sign In" : "Create Account"}
+              {isLogin ? "Sign In" : "Start Free Trial"}
             </Button>
             
             <div className="text-center text-sm text-gray-600">
@@ -117,7 +122,7 @@ export default function DirectAuth() {
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="ml-1 text-orange-600 hover:text-orange-700 font-medium"
+                className="ml-1 text-primary hover:text-primary/80 font-medium"
               >
                 {isLogin ? "Sign up" : "Sign in"}
               </button>
