@@ -40,7 +40,7 @@ export async function setupAuth(app: Express) {
     res.redirect("/api/auth/logout");
   });
 
-  // Sign up endpoint
+  // Sign up endpoint (supports both JSON and form data)
   app.post("/api/auth/signup", async (req, res) => {
     try {
       const { email, password, firstName, lastName } = req.body;
@@ -71,6 +71,11 @@ export async function setupAuth(app: Express) {
       // Create session
       (req.session as any).userId = newUser.id;
       
+      // If this is a form submission, redirect to dashboard
+      if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+        return res.redirect('/');
+      }
+      
       res.status(201).json({
         user: {
           id: newUser.id,
@@ -83,11 +88,14 @@ export async function setupAuth(app: Express) {
       });
     } catch (error) {
       console.error("Signup error:", error);
+      if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+        return res.redirect('/auth?error=signup_failed');
+      }
       res.status(500).json({ message: "Failed to create account" });
     }
   });
 
-  // Login endpoint
+  // Login endpoint (supports both JSON and form data)
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -111,6 +119,11 @@ export async function setupAuth(app: Express) {
       // Create session
       (req.session as any).userId = user.id;
       
+      // If this is a form submission, redirect to dashboard
+      if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+        return res.redirect('/');
+      }
+      
       res.json({
         user: {
           id: user.id,
@@ -123,6 +136,9 @@ export async function setupAuth(app: Express) {
       });
     } catch (error) {
       console.error("Login error:", error);
+      if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+        return res.redirect('/auth?error=login_failed');
+      }
       res.status(500).json({ message: "Failed to login" });
     }
   });

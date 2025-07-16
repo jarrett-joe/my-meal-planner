@@ -143,13 +143,40 @@ export default function Auth() {
       return;
     }
 
-    if (isLogin) {
-      console.log("Attempting login");
-      loginMutation.mutate({ email, password });
-    } else {
-      console.log("Attempting signup");
-      signupMutation.mutate({ email, password, firstName, lastName });
+    // Try direct form submission to bypass all JS interception
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = isLogin ? '/api/auth/login' : '/api/auth/signup';
+    form.style.display = 'none';
+
+    const emailInput = document.createElement('input');
+    emailInput.type = 'hidden';
+    emailInput.name = 'email';
+    emailInput.value = email;
+    form.appendChild(emailInput);
+
+    const passwordInput = document.createElement('input');
+    passwordInput.type = 'hidden';
+    passwordInput.name = 'password';
+    passwordInput.value = password;
+    form.appendChild(passwordInput);
+
+    if (!isLogin) {
+      const firstNameInput = document.createElement('input');
+      firstNameInput.type = 'hidden';
+      firstNameInput.name = 'firstName';
+      firstNameInput.value = firstName;
+      form.appendChild(firstNameInput);
+
+      const lastNameInput = document.createElement('input');
+      lastNameInput.type = 'hidden';
+      lastNameInput.name = 'lastName';
+      lastNameInput.value = lastName;
+      form.appendChild(lastNameInput);
     }
+
+    document.body.appendChild(form);
+    form.submit();
   };
 
   return (
