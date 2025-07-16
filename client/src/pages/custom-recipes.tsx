@@ -44,7 +44,7 @@ export default function CustomRecipes() {
   // Redirect to login if not authenticated
   if (!authLoading && !user) {
     setTimeout(() => {
-      window.location.href = "/api/login";
+      window.location.href = "/auth";
     }, 500);
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
@@ -96,7 +96,7 @@ export default function CustomRecipes() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 500);
         return;
       }
@@ -151,7 +151,7 @@ export default function CustomRecipes() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 500);
         return;
       }
@@ -202,7 +202,7 @@ export default function CustomRecipes() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 500);
         return;
       }

@@ -254,7 +254,7 @@ export default function AdminLogin() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Regular users can{" "}
-              <a href="/api/login" className="text-emerald-600 hover:underline">
+              <a href="/auth" className="text-emerald-600 hover:underline">
                 sign in with Replit
               </a>
             </p>
