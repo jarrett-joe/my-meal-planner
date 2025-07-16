@@ -30,6 +30,16 @@ export function getSession() {
 export async function setupAuth(app: Express) {
   app.use(getSession());
 
+  // Redirect old login route to new auth page
+  app.get("/api/login", (req, res) => {
+    res.redirect("/auth");
+  });
+
+  // Redirect old logout route to new logout endpoint
+  app.get("/api/logout", (req, res) => {
+    res.redirect("/api/auth/logout");
+  });
+
   // Sign up endpoint
   app.post("/api/auth/signup", async (req, res) => {
     try {
@@ -151,6 +161,16 @@ export async function setupAuth(app: Express) {
         return res.status(500).json({ message: "Failed to logout" });
       }
       res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  // Logout endpoint (GET version for redirects)
+  app.get("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+      }
+      res.redirect("/");
     });
   });
 }
