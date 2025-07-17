@@ -113,6 +113,28 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 1. Check Railway logs for any errors
 2. Verify database connections
 3. Test API endpoints
+
+## Troubleshooting
+
+### Blank Site Issues
+If your site appears blank after deployment:
+
+1. **Check Build Logs**: Go to your Railway project → Deployments → Click on latest deployment → View build logs
+2. **Common Issues**:
+   - Missing environment variables (especially `DATABASE_URL`)
+   - Build failures due to missing dependencies
+   - Port configuration issues
+3. **Force Redeploy**: In Railway dashboard, click "Redeploy" to trigger a fresh build
+4. **Check Server Logs**: Look for errors in the runtime logs section
+
+### Common Issues
+- **Build failures**: Check that all dependencies are in package.json
+- **Database connection**: Verify DATABASE_URL is correctly set
+- **Missing environment variables**: Ensure all required secrets are configured
+- **Port issues**: Railway automatically assigns ports, app should use process.env.PORT
+
+### Health Check
+Your app should respond at the root path (/) for Railway's health checks to pass.
 4. Monitor performance metrics
 
 ## Step 8: Ongoing Maintenance
