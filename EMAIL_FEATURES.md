@@ -1,7 +1,7 @@
 # Email Automation Features
 
 ## Overview
-My Meal Planner AI includes a comprehensive email automation system using SendGrid to enhance user engagement and provide valuable notifications throughout the meal planning experience.
+My Meal Planner includes a comprehensive email automation system using SendGrid to enhance user engagement and provide valuable notifications throughout the meal planning experience.
 
 ## Email Features
 
@@ -45,8 +45,8 @@ My Meal Planner AI includes a comprehensive email automation system using SendGr
 SENDGRID_API_KEY=SG.your-api-key-here
 
 // From address configuration
-FROM_EMAIL="hello@mymealplannerai.com"
-FROM_NAME="My Meal Planner AI"
+FROM_EMAIL="hello@mymealplanner.com"
+FROM_NAME="My Meal Planner"
 ```
 
 ### Email Templates

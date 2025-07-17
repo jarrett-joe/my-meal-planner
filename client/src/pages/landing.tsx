@@ -125,7 +125,7 @@ export default function Landing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <Utensils className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-gray-900">My Meal Planner AI</span>
+              <span className="text-xl font-bold text-gray-900">My Meal Planner</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-primary transition-colors">Features</a>
@@ -260,7 +260,7 @@ export default function Landing() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">See My Meal Planner AI In Action</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">See My Meal Planner In Action</h2>
             <p className="text-xl text-gray-600">Experience the intuitive meal planning interface</p>
           </div>
           
@@ -563,7 +563,7 @@ export default function Landing() {
             <div className="bg-blue-50 p-4 rounded-lg">
               <h3 className="font-semibold text-gray-900 mb-2">No Account Required!</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Start using My Meal Planner AI instantly - no signup, no passwords, no hassle.
+                Start using My Meal Planner instantly - no signup, no passwords, no hassle.
                 Just click below and begin planning your meals!
               </p>
             </div>

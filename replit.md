@@ -1,7 +1,7 @@
-# My Meal Planner AI - Meal Planning SaaS
+# My Meal Planner - Meal Planning SaaS
 
 ## Project Overview
-My Meal Planner AI is a subscription-based meal planning platform that helps families of 4 discover healthy, delicious meals using AI-powered recommendations. The platform generates original recipes inspired by trusted food websites and creates automated grocery lists.
+My Meal Planner is a subscription-based meal planning platform that helps families of 4 discover healthy, delicious meals using AI-powered recommendations. The platform generates original recipes inspired by trusted food websites and creates automated grocery lists.
 
 ## Key Features
 - AI-powered meal discovery using GROK API
@@ -18,7 +18,7 @@ My Meal Planner AI is a subscription-based meal planning platform that helps fam
 - **Professional email automation system** with welcome emails, meal plan summaries, grocery list notifications, and subscription confirmations via SendGrid
 
 ## User Preferences
-- Website name: "My Meal Planner AI" (not "MealPlan Pro")
+- Website name: "My Meal Planner" (not "MealPlan Pro")
 - Recipe inspiration websites: halfbakedharvest.com, smittenkitchen.com, thekitchn.com, barefootcontessa.com, allrecipes.com
 - All recipes must serve 4 people
 - Never use seed oils (canola, vegetable, sunflower, etc.) - only EVOO or avocado oil
@@ -26,8 +26,8 @@ My Meal Planner AI is a subscription-based meal planning platform that helps fam
 - Display recipe images when available
 
 ## Recent Changes
-- **January 17, 2025**: ✅ **COMPLETE REBRANDING** - Changed entire application from "Plan My Plates" to "My Meal Planner AI" across all files, emails, and user interfaces.
-- **January 17, 2025**: ✅ **EMAIL AUTOMATION COMPLETE** - Implemented comprehensive SendGrid email system with welcome emails, meal plan summaries, grocery list notifications, and subscription confirmations. All emails feature professional templates with My Meal Planner AI branding.
+- **January 17, 2025**: ✅ **COMPLETE REBRANDING** - Changed entire application from "Plan My Plates" to "My Meal Planner" across all files, emails, and user interfaces.
+- **January 17, 2025**: ✅ **EMAIL AUTOMATION COMPLETE** - Implemented comprehensive SendGrid email system with welcome emails, meal plan summaries, grocery list notifications, and subscription confirmations. All emails feature professional templates with My Meal Planner branding.
 - **January 16, 2025**: ✅ **RAILWAY DEPLOYMENT READY** - Created comprehensive deployment guide and checklist for Railway hosting. App is production-ready with custom email/password authentication that will work perfectly on Railway platform.
 - **January 16, 2025**: ✅ **UI UPDATED** - Direct auth page now matches landing page aesthetics with fork/knife icon, consistent colors, and proper free trial messaging.
 - **January 16, 2025**: ⚠️ **DEPLOYMENT LIMITATION** - Replit Deployments enforces its own authentication system that cannot be bypassed with custom email/password auth. Works perfectly in development but production deployment requires either Replit Auth integration or alternative hosting platform.
@@ -72,7 +72,7 @@ My Meal Planner AI is a subscription-based meal planning platform that helps fam
 - **January 5, 2025**: Changed from searching websites directly to using them as inspiration sources
 - **January 5, 2025**: Updated grocery list generation to reflect family-sized portions and oil restrictions
 - **January 5, 2025**: Enhanced meal cards to display recipe source websites
-- **January 5, 2025**: Complete rebranding to "My Meal Planner AI" throughout application
+- **January 5, 2025**: Complete rebranding to "My Meal Planner" throughout application
 
 ## Technical Architecture
 - Frontend: React with TypeScript, Tailwind CSS, shadcn/ui components

@@ -10,7 +10,7 @@
 ## Step 1: Push Code to GitHub
 1. **Create GitHub repository**
    - Go to github.com → New repository
-   - Name it `my-meal-planner-ai` (or your preferred name)
+   - Name it `my-meal-planner` (or your preferred name)
    - Make it public or private
    - Don't initialize with README (you already have code)
 
@@ -20,7 +20,7 @@
    git add .
    git commit -m "Initial commit"
    git branch -M main
-   git remote add origin https://github.com/yourusername/my-meal-planner-ai.git
+   git remote add origin https://github.com/yourusername/my-meal-planner.git
    git push -u origin main
    ```
 
@@ -32,7 +32,7 @@
 
 2. **Create new project**
    - Click "Deploy from GitHub repo"
-   - Select your `my-meal-planner-ai` repository
+   - Select your `my-meal-planner` repository
    - Railway will start building automatically
 
 ## Step 3: Add Database

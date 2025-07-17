@@ -18,7 +18,7 @@ export default function DirectAuth() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <Utensils className="h-8 w-8 text-primary mr-2" />
-            <span className="text-2xl font-bold text-gray-900">My Meal Planner AI</span>
+            <span className="text-2xl font-bold text-gray-900">My Meal Planner</span>
           </div>
           <CardTitle className="text-2xl text-center">
             {isLogin ? "Welcome back" : "Create your account"}

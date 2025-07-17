@@ -96,7 +96,7 @@ function SubscribeForm({ selectedPlan }: { selectedPlan: typeof SUBSCRIPTION_PLA
       } else {
         toast({
           title: "Payment Successful",
-          description: `You are now subscribed to My Meal Planner AI ${selectedPlan.name}!`,
+          description: `You are now subscribed to My Meal Planner ${selectedPlan.name}!`,
         });
       }
     } catch (error) {
@@ -280,7 +280,7 @@ export default function Subscribe() {
           <div className="text-center mt-12 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Free Trial Included</h3>
             <p className="text-muted-foreground">
-              Every new user gets 10 free trial meals to explore My Meal Planner AI. 
+              Every new user gets 10 free trial meals to explore My Meal Planner. 
               No credit card required to start your trial!
             </p>
           </div>

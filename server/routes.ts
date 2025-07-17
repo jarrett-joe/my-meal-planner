@@ -30,13 +30,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { username, password } = req.body;
     
     // Simple admin credentials (you can change these)
-    if (username === 'admin' && password === 'mymealplannerai2025') {
+    if (username === 'admin' && password === 'mymealplanner2025') {
       // Create or get admin user
-      let adminUser = await storage.getUserByEmail('admin@mymealplannerai.com');
+      let adminUser = await storage.getUserByEmail('admin@mymealplanner.com');
       if (!adminUser) {
         adminUser = await storage.createUser({
-          email: 'admin@mymealplannerai.com',
-          password: 'mymealplannerai2025',
+          email: 'admin@mymealplanner.com',
+          password: 'mymealplanner2025',
           firstName: 'Master',
           lastName: 'Admin',
           profileImageUrl: null,

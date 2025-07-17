@@ -1,4 +1,4 @@
-# Railway Deployment Guide for My Meal Planner AI
+# Railway Deployment Guide for My Meal Planner
 
 ## Prerequisites
 - GitHub account
@@ -40,7 +40,7 @@ SENDGRID_API_KEY=SG.xxxxxxxxxx
 1. In Railway dashboard, click "New Project"
 2. Select "Deploy from GitHub repo"
 3. Connect your GitHub account if not already connected
-4. Select your My Meal Planner AI repository
+4. Select your My Meal Planner repository
 
 ## Step 3: Configure Database
 
@@ -96,7 +96,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ### 6.2 Add Custom Domain
 1. In Railway dashboard, go to "Settings" → "Domains"
 2. Click "Custom Domain"
-3. Enter your domain (e.g., `mymealplannerai.com`)
+3. Enter your domain (e.g., `mymealplanner.com`)
 4. Follow DNS configuration instructions
 5. Point your domain's DNS to Railway's servers
 
