@@ -1,7 +1,7 @@
 # Email Automation Features
 
 ## Overview
-Plan My Plates includes a comprehensive email automation system using SendGrid to enhance user engagement and provide valuable notifications throughout the meal planning experience.
+My Meal Planner AI includes a comprehensive email automation system using SendGrid to enhance user engagement and provide valuable notifications throughout the meal planning experience.
 
 ## Email Features
 
@@ -45,8 +45,8 @@ Plan My Plates includes a comprehensive email automation system using SendGrid t
 SENDGRID_API_KEY=SG.your-api-key-here
 
 // From address configuration
-FROM_EMAIL="hello@planmyplates.com"
-FROM_NAME="Plan My Plates"
+FROM_EMAIL="hello@mymealplannerai.com"
+FROM_NAME="My Meal Planner AI"
 ```
 
 ### Email Templates

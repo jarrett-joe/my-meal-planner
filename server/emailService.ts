@@ -10,8 +10,8 @@ if (process.env.SENDGRID_API_KEY) {
   mailService.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
-const FROM_EMAIL = "hello@planmyplates.com"; // Replace with your verified sender email
-const FROM_NAME = "Plan My Plates";
+const FROM_EMAIL = "hello@mymealplannerai.com"; // Replace with your verified sender email
+const FROM_NAME = "My Meal Planner AI";
 
 interface EmailParams {
   to: string;
@@ -47,18 +47,18 @@ async function sendEmail(params: EmailParams): Promise<boolean> {
 // Email Templates
 export const emailTemplates = {
   welcome: (user: User) => ({
-    subject: "Welcome to Plan My Plates! 🍽️ Your 10 free meals await",
+    subject: "Welcome to My Meal Planner AI! 🍽️ Your 10 free meals await",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #e67e22; margin: 0;">🍽️ Plan My Plates</h1>
+          <h1 style="color: #e67e22; margin: 0;">🍽️ My Meal Planner AI</h1>
           <p style="color: #666; font-size: 16px;">AI-Powered Meal Planning Made Simple</p>
         </div>
         
         <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
           <h2 style="color: #2c3e50; margin-top: 0;">Welcome, ${user.firstName || 'there'}! 👋</h2>
           <p style="color: #555; line-height: 1.6;">
-            Thank you for joining Plan My Plates! We're excited to help you discover delicious, 
+            Thank you for joining My Meal Planner AI! We're excited to help you discover delicious, 
             family-sized meals that fit your preferences and make grocery shopping a breeze.
           </p>
         </div>
@@ -75,7 +75,7 @@ export const emailTemplates = {
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://planmyplates.com" style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+          <a href="https://mymealplannerai.com" style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
             Start Discovering Meals
           </a>
         </div>
@@ -98,11 +98,11 @@ export const emailTemplates = {
         </div>
       </div>
     `,
-    text: `Welcome to Plan My Plates!
+    text: `Welcome to My Meal Planner AI!
 
 Hi ${user.firstName || 'there'},
 
-Thank you for joining Plan My Plates! We're excited to help you discover delicious, family-sized meals.
+Thank you for joining My Meal Planner AI! We're excited to help you discover delicious, family-sized meals.
 
 Your free trial includes:
 - 10 free meal suggestions (no credit card required)
@@ -117,10 +117,10 @@ Getting started:
 3. Add favorites to your meal calendar
 4. Create grocery lists for easy shopping
 
-Visit https://planmyplates.com to start discovering meals!
+Visit https://mymealplannerai.com to start discovering meals!
 
 Happy cooking!
-The Plan My Plates Team`
+The My Meal Planner AI Team`
   }),
 
   mealPlan: (user: User, meals: Meal[]) => ({
@@ -128,7 +128,7 @@ The Plan My Plates Team`
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #e67e22; margin: 0;">🍽️ Plan My Plates</h1>
+          <h1 style="color: #e67e22; margin: 0;">🍽️ My Meal Planner AI</h1>
           <p style="color: #666; font-size: 16px;">Your Personalized Meal Plan</p>
         </div>
         
@@ -158,7 +158,7 @@ The Plan My Plates Team`
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://planmyplates.com" style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+          <a href="https://mymealplannerai.com" style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
             View Full Meal Plan
           </a>
         </div>
@@ -175,7 +175,7 @@ The Plan My Plates Team`
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
           <p style="color: #888; font-size: 14px;">
             Happy cooking! 🍳<br>
-            The Plan My Plates Team
+            The My Meal Planner AI Team
           </p>
         </div>
       </div>
@@ -197,10 +197,10 @@ Next steps:
 - Generate a grocery list for easy shopping  
 - Start cooking and enjoy!
 
-Visit https://planmyplates.com to view your full meal plan.
+Visit https://mymealplannerai.com to view your full meal plan.
 
 Happy cooking!
-The Plan My Plates Team`
+The My Meal Planner AI Team`
   }),
 
   groceryList: (user: User, groceryList: GroceryList) => ({
@@ -208,7 +208,7 @@ The Plan My Plates Team`
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #e67e22; margin: 0;">🛒 Plan My Plates</h1>
+          <h1 style="color: #e67e22; margin: 0;">🛒 My Meal Planner AI</h1>
           <p style="color: #666; font-size: 16px;">Your Grocery List</p>
         </div>
         
@@ -228,7 +228,7 @@ The Plan My Plates Team`
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://planmyplates.com" style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+          <a href="https://mymealplannerai.com" style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
             View in Dashboard
           </a>
         </div>
@@ -246,7 +246,7 @@ The Plan My Plates Team`
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
           <p style="color: #888; font-size: 14px;">
             Happy shopping and cooking! 🍳<br>
-            The Plan My Plates Team
+            The My Meal Planner AI Team
           </p>
         </div>
       </div>
@@ -266,18 +266,18 @@ Shopping tips:
 - All recipes use only EVOO or avocado oil (no seed oils!)
 - Each recipe serves 4 people
 
-Visit https://planmyplates.com to view in your dashboard.
+Visit https://mymealplannerai.com to view in your dashboard.
 
 Happy shopping and cooking!
-The Plan My Plates Team`
+The My Meal Planner AI Team`
   }),
 
   subscriptionConfirmation: (user: User, plan: string) => ({
-    subject: "Welcome to Plan My Plates Premium! 🎉",
+    subject: "Welcome to My Meal Planner AI Premium! 🎉",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #e67e22; margin: 0;">🎉 Plan My Plates</h1>
+          <h1 style="color: #e67e22; margin: 0;">🎉 My Meal Planner AI</h1>
           <p style="color: #666; font-size: 16px;">Premium Subscription Activated</p>
         </div>
         
@@ -301,7 +301,7 @@ The Plan My Plates Team`
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://planmyplates.com" style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+          <a href="https://mymealplannerai.com" style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">
             Start Using Premium
           </a>
         </div>
@@ -317,12 +317,12 @@ The Plan My Plates Team`
         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
           <p style="color: #888; font-size: 14px;">
             Happy cooking! 🍳<br>
-            The Plan My Plates Team
+            The My Meal Planner AI Team
           </p>
         </div>
       </div>
     `,
-    text: `Welcome to Plan My Plates Premium!
+    text: `Welcome to My Meal Planner AI Premium!
 
 Hi ${user.firstName || 'there'},
 
@@ -335,12 +335,12 @@ Your premium benefits:
 - Calendar planning - Schedule meals for the whole week
 - Priority support - Get help when you need it
 
-Visit https://planmyplates.com to start using your premium features.
+Visit https://mymealplannerai.com to start using your premium features.
 
 Questions? Reply to this email or visit our help center.
 
 Happy cooking!
-The Plan My Plates Team`
+The My Meal Planner AI Team`
   })
 };
 

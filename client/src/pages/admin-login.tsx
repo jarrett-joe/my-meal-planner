@@ -206,7 +206,7 @@ export default function AdminLogin() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Master Admin Login</CardTitle>
-          <p className="text-gray-600">Access Plan My Plates admin panel</p>
+          <p className="text-gray-600">Access My Meal Planner AI admin panel</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

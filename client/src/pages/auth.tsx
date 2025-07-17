@@ -116,7 +116,7 @@ export default function Auth() {
       console.log("Signup successful");
       toast({
         title: "Account created!",
-        description: "Welcome to Plan My Plates! You have 10 free trial meals to get started.",
+        description: "Welcome to My Meal Planner AI! You have 10 free trial meals to get started.",
       });
       navigate("/");
     },
@@ -185,7 +185,7 @@ export default function Auth() {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <ChefHat className="h-8 w-8 text-orange-600 mr-2" />
-            <span className="text-2xl font-bold text-orange-600">Plan My Plates</span>
+            <span className="text-2xl font-bold text-orange-600">My Meal Planner AI</span>
           </div>
           <CardTitle className="text-2xl text-center">
             {isLogin ? "Welcome back" : "Create your account"}

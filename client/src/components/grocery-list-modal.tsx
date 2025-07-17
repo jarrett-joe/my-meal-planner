@@ -29,7 +29,7 @@ export function GroceryListModal({ open, onOpenChange, weekStartDate }: GroceryL
   const handleDownload = () => {
     if (!groceryList?.ingredients) return;
     
-    let content = "Plan My Plates - Grocery List\n";
+    let content = "My Meal Planner AI - Grocery List\n";
     content += `Week of ${weekStartDate.toLocaleDateString()}\n\n`;
     
     groceryList.ingredients.forEach((category: any) => {
@@ -54,7 +54,7 @@ export function GroceryListModal({ open, onOpenChange, weekStartDate }: GroceryL
   const handleShare = async () => {
     if (!groceryList?.ingredients || !navigator.share) return;
     
-    let text = "My Plan My Plates Grocery List:\n\n";
+    let text = "My My Meal Planner AI Grocery List:\n\n";
     groceryList.ingredients.forEach((category: any) => {
       text += `${category.category}:\n`;
       category.items.forEach((item: string) => {
@@ -65,7 +65,7 @@ export function GroceryListModal({ open, onOpenChange, weekStartDate }: GroceryL
     
     try {
       await navigator.share({
-        title: 'Plan My Plates Grocery List',
+        title: 'My Meal Planner AI Grocery List',
         text,
       });
     } catch (error) {
