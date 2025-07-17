@@ -27,11 +27,14 @@ if (process.env.STRIPE_SECRET_KEY) {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint for Railway (must be FIRST, before any middleware)
   app.get('/health', (req, res) => {
+    console.log('🩺 Health check requested');
     res.status(200).json({ 
       status: 'ok', 
       timestamp: new Date().toISOString(),
       port: process.env.PORT || '8080',
-      env: process.env.NODE_ENV || 'development'
+      env: process.env.NODE_ENV || 'development',
+      database: process.env.DATABASE_URL ? 'connected' : 'not configured',
+      stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured'
     });
   });
 

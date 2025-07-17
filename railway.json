@@ -8,9 +8,7 @@
     "startCommand": "npm start",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
-    "restartPolicyType": "on_failure"
-  },
-  "variables": {
-    "PORT": "8080"
+    "restartPolicyType": "on_failure",
+    "healthcheckInterval": 30
   }
 }

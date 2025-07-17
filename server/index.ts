@@ -69,7 +69,8 @@ app.use((req, res, next) => {
     server.listen(port, "0.0.0.0", () => {
       log(`🚀 My Meal Planner server running on port ${port}`);
       log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      log(`🔗 Health check available at: http://localhost:${port}/health`);
+      log(`🔗 Health check available at: http://0.0.0.0:${port}/health`);
+      log(`🌐 Server ready for Railway health checks`);
     });
 
   } catch (error) {
