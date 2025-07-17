@@ -22,6 +22,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint for Railway (must be FIRST, before any middleware)
+  app.get('/health', (req, res) => {
+    res.status(200).json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      port: process.env.PORT || '8080',
+      env: process.env.NODE_ENV || 'development'
+    });
+  });
+
   // Auth middleware
   await setupAuth(app);
 
@@ -806,10 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Health check endpoint for Railway
-  app.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
+
 
   const httpServer = createServer(app);
   return httpServer;

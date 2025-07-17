@@ -56,9 +56,11 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use Railway's PORT environment variable or default to 5000
-  const port = parseInt(process.env.PORT || "5000");
+  // Use Railway's PORT environment variable or default to 8080
+  const port = parseInt(process.env.PORT || "8080");
   server.listen(port, "0.0.0.0", () => {
-    log(`serving on port ${port}`);
+    log(`🚀 My Meal Planner server running on port ${port}`);
+    log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    log(`🔗 Health check available at: http://localhost:${port}/health`);
   });
 })();

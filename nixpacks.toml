@@ -13,6 +13,7 @@ cmd = "npm start"
 [variables]
 NODE_ENV = "production"
 NPM_CONFIG_PRODUCTION = "false"
+PORT = "8080"
 
 [start]
 cmd = "npm start"

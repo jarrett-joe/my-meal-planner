@@ -1,135 +1,89 @@
-# Railway Deployment Checklist
+# Railway Deployment Checklist - My Meal Planner
 
-## Before You Start
-- [ ] Create GitHub account (if you don't have one)
-- [ ] Create Railway account at railway.app
-- [ ] Have your Stripe API keys ready
-- [ ] Have your XAI API key ready
-- [ ] Have SendGrid API key ready (if using email features)
+## ✅ Fixed Issues
 
-## Step 1: Push Code to GitHub
-1. **Create GitHub repository**
-   - Go to github.com → New repository
-   - Name it `my-meal-planner` (or your preferred name)
-   - Make it public or private
-   - Don't initialize with README (you already have code)
+### Port Configuration
+- ✅ Changed server to use port 8080 (Railway standard)
+- ✅ Updated server/index.ts to use `process.env.PORT || "8080"`
+- ✅ Added PORT=8080 to railway.json and nixpacks.toml
 
-2. **Push your code** (if not already on GitHub)
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/yourusername/my-meal-planner.git
-   git push -u origin main
-   ```
+### Health Check Configuration
+- ✅ Added `/health` endpoint that returns JSON status
+- ✅ Moved health check to FIRST route (before any middleware)
+- ✅ Updated railway.json to use `/health` path
+- ✅ Increased health check timeout to 300 seconds
 
-## Step 2: Setup Railway
-1. **Sign up for Railway**
-   - Go to railway.app
-   - Click "Start a New Project"
-   - Sign up with GitHub (easiest option)
+### Build Configuration
+- ✅ Created railway.json with proper build commands
+- ✅ Created nixpacks.toml with Node.js 18 configuration
+- ✅ Set correct environment variables in config files
 
-2. **Create new project**
-   - Click "Deploy from GitHub repo"
-   - Select your `my-meal-planner` repository
-   - Railway will start building automatically
+## 🚀 Next Steps
 
-## Step 3: Add Database
-1. **Add PostgreSQL**
-   - In Railway dashboard, click "New" → "Database" → "Add PostgreSQL"
-   - Wait for PostgreSQL to spin up (2-3 minutes)
-   - Copy the `DATABASE_URL` from the database service
-
-## Step 4: Configure Environment Variables
-**In Railway dashboard, go to your app service → Variables tab**
-
-Add these environment variables:
-
-```
-NODE_ENV=production
-DATABASE_URL=postgresql://[copied from your PostgreSQL service]
-SESSION_SECRET=[generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"]
-STRIPE_PRICE_BASIC=price_[your_stripe_basic_price_id]
-STRIPE_PRICE_STANDARD=price_[your_stripe_standard_price_id]
-STRIPE_PRICE_PREMIUM=price_[your_stripe_premium_price_id]
-XAI_API_KEY=xai-[your_xai_api_key]
-SENDGRID_API_KEY=SG.[your_sendgrid_key] (optional)
+### 1. Push Updated Code
+```bash
+# In Replit Version Control tab:
+Commit message: "Fix Railway port and health check configuration"
+Click "Commit & Push"
 ```
 
-## Step 5: Generate Required Keys
+### 2. Environment Variables in Railway
+Make sure you have these set in Railway Dashboard → Variables:
+- `NODE_ENV=production`
+- `PORT=8080` (should be automatic)
+- `DATABASE_URL` (copy from your PostgreSQL service)
+- `SESSION_SECRET` (generate new secure string)
+- `STRIPE_PRICE_BASIC=price_1RkZafCC1Fk5THi6JLMa6IDu`
+- `STRIPE_PRICE_STANDARD=price_1RkZbdCC1Fk5THi65ZRF704g`
+- `STRIPE_PRICE_PREMIUM=price_1RkZc5CC1Fk5THi6EPu30xTo`
 
-### SESSION_SECRET
-Run this command locally to generate:
+### 3. Generate SESSION_SECRET
+Run this command to generate a secure session secret:
 ```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
-### Stripe Price IDs
-1. Go to Stripe Dashboard → Products
-2. Find your subscription products
-3. Copy the Price IDs (start with `price_`)
+### 4. Test Health Check
+After deployment, test the health check:
+```
+https://your-domain.com/health
+```
 
-### XAI API Key
-1. Go to XAI console
-2. Generate API key
-3. Copy the key (starts with `xai-`)
+Should return:
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-01-17T...",
+  "port": "8080",
+  "env": "production"
+}
+```
 
-## Step 6: Monitor Deployment
-1. **Watch build logs**
-   - In Railway dashboard → your app service → "Deployments"
-   - Monitor the build process
-   - Look for any errors
+## 🔧 Troubleshooting
 
-2. **Verify deployment**
-   - Railway will provide a URL like `your-app.up.railway.app`
-   - Visit the URL to test your app
+### If Health Check Still Fails
+1. Check Railway logs for server startup errors
+2. Verify DATABASE_URL is correctly set
+3. Ensure PostgreSQL service is running
+4. Check that port 8080 is correctly configured
 
-## Step 7: Test Your App
-- [ ] Landing page loads correctly
-- [ ] `/direct-auth` page works
-- [ ] Can sign up new account
-- [ ] Can log in
-- [ ] Dashboard loads for authenticated users
-- [ ] Meal generation works (tests XAI API)
-- [ ] Stripe subscription flow works
+### If Site is Still Blank
+1. Verify build completed successfully
+2. Check that `npm run build` created dist/ folder
+3. Verify static files are being served correctly
+4. Check browser console for JavaScript errors
 
-## Step 8: Custom Domain (Optional)
-1. **In Railway dashboard → Settings → Domains**
-2. Click "Custom Domain"
-3. Enter your domain
-4. Follow DNS instructions to point domain to Railway
+### Custom Domain Issues
+- Custom domain setup doesn't affect health checks
+- Railway should still respond on both `.railway.app` and custom domain
+- DNS propagation can take up to 24 hours
 
-## Troubleshooting
+## 📝 What Was Fixed
 
-### Build Fails
-- Check build logs in Railway dashboard
-- Verify all dependencies are correct
-- Check for TypeScript errors
+1. **Port Mismatch**: Changed from 5000 to 8080 to match Railway's expectations
+2. **Health Check Location**: Moved `/health` route to be first, before any middleware
+3. **Server Listen Method**: Updated to use Railway's preferred `server.listen(port, host)` format
+4. **Configuration Files**: Added proper Railway and Nixpacks configuration
+5. **Environment Variables**: Set PORT explicitly in configuration files
 
-### Database Connection Issues
-- Verify `DATABASE_URL` is correctly copied
-- Ensure PostgreSQL service is running
-- Check database service logs
-
-### Authentication Not Working
-- Verify `SESSION_SECRET` is set
-- Check that app redirects to `/direct-auth` not `/auth`
-- Test in incognito browser
-
-### API Errors
-- Verify all API keys are correctly set
-- Check service logs for specific errors
-- Test API endpoints individually
-
-## Cost Estimate
-- **App Service**: $5/month
-- **PostgreSQL**: $5/month
-- **Total**: ~$10/month
-- Custom domain: Free
-- SSL: Free (automatic)
-
-## Support
-- Railway Discord: https://discord.gg/railway
-- Railway Docs: https://docs.railway.app
-- Check Railway status: https://status.railway.app
+The "service unavailable" error should now be resolved!
