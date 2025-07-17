@@ -4,6 +4,7 @@ import Stripe from "stripe";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, requireAuth } from "./emailAuth";
 import { generateMealSuggestions, generateGroceryList } from "./grok";
+import { emailService } from "./emailService";
 import { 
   insertUserPreferencesSchema,
   insertMealSchema,
@@ -269,6 +270,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       await storage.updateUserStripeInfo(user.id, customerId, subscription.id);
+
+      // Send subscription confirmation email
+      try {
+        const planName = planId.charAt(0).toUpperCase() + planId.slice(1); // Capitalize first letter
+        await emailService.sendSubscriptionConfirmationEmail(user, `${planName} Plan`);
+      } catch (error) {
+        console.error("Failed to send subscription confirmation email:", error);
+        // Continue with subscription creation even if email fails
+      }
       
       const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
       const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
@@ -407,6 +417,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const finalMeals = savedMeals.filter(Boolean);
       console.log(`Returning ${finalMeals.length} meals to frontend`);
+      
+      // Send meal plan email
+      try {
+        await emailService.sendMealPlanEmail(user, finalMeals);
+      } catch (error) {
+        console.error("Failed to send meal plan email:", error);
+        // Continue with response even if email fails
+      }
+      
       res.json(finalMeals);
     } catch (error) {
       console.error("Error generating meal suggestions:", error);
@@ -538,6 +557,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Saving grocery list for user ${userId}, weekStart: ${weekStart.toISOString()}, ingredients count: ${groceryCategories.length}`);
       
       const savedList = await storage.upsertGroceryList(groceryListData);
+      
+      // Send grocery list email
+      try {
+        await emailService.sendGroceryListEmail(user, savedList);
+      } catch (error) {
+        console.error("Failed to send grocery list email:", error);
+        // Continue with response even if email fails
+      }
+      
       res.json(savedList);
     } catch (error) {
       console.error("Error generating grocery list:", error);

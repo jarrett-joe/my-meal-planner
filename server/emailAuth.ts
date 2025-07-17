@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { emailService } from "./emailService";
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -70,6 +71,14 @@ export async function setupAuth(app: Express) {
 
       // Create session
       (req.session as any).userId = newUser.id;
+      
+      // Send welcome email
+      try {
+        await emailService.sendWelcomeEmail(newUser);
+      } catch (error) {
+        console.error("Failed to send welcome email:", error);
+        // Continue with signup even if email fails
+      }
       
       // If this is a form submission, redirect to dashboard
       if (req.headers['content-type'] === 'application/x-www-form-urlencoded') {
