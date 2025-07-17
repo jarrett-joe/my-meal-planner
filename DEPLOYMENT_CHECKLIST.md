@@ -18,6 +18,12 @@
 - ✅ Created nixpacks.toml with Node.js 18 configuration
 - ✅ Set correct environment variables in config files
 
+### Error Handling
+- ✅ Added graceful error handling for missing environment variables
+- ✅ Made Stripe optional (won't crash server if STRIPE_SECRET_KEY missing)
+- ✅ Added comprehensive startup logging for debugging
+- ✅ Added proper try-catch blocks for server initialization
+
 ## 🚀 Next Steps
 
 ### 1. Push Updated Code
@@ -29,13 +35,18 @@ Click "Commit & Push"
 
 ### 2. Environment Variables in Railway
 Make sure you have these set in Railway Dashboard → Variables:
+
+**Required (app will crash without these):**
 - `NODE_ENV=production`
-- `PORT=8080` (should be automatic)
 - `DATABASE_URL` (copy from your PostgreSQL service)
 - `SESSION_SECRET` (generate new secure string)
+
+**Optional (features will be disabled if missing):**
+- `STRIPE_SECRET_KEY` (for payment processing)
 - `STRIPE_PRICE_BASIC=price_1RkZafCC1Fk5THi6JLMa6IDu`
 - `STRIPE_PRICE_STANDARD=price_1RkZbdCC1Fk5THi65ZRF704g`
 - `STRIPE_PRICE_PREMIUM=price_1RkZc5CC1Fk5THi6EPu30xTo`
+- `SENDGRID_API_KEY` (for email functionality)
 
 ### 3. Generate SESSION_SECRET
 Run this command to generate a secure session secret:

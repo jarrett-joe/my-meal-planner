@@ -13,13 +13,16 @@ import {
   type Meal 
 } from "@shared/schema";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+// Initialize Stripe only if the secret key is available
+let stripe: Stripe | null = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2024-06-20",
+  });
+  console.log('✅ Stripe initialized successfully');
+} else {
+  console.warn('⚠️  STRIPE_SECRET_KEY not found - payment features will be disabled');
 }
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint for Railway (must be FIRST, before any middleware)
@@ -216,6 +219,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create meal-based subscription
   app.post('/api/create-subscription', requireAuth, async (req: any, res) => {
+    if (!stripe) {
+      return res.status(503).json({ message: "Payment system not available - Stripe not configured" });
+    }
+    
     const userId = getUserId(req);
     const { planId } = req.body;
     
