@@ -13,4 +13,4 @@ NPM_CONFIG_PRODUCTION = "false"
 PORT = "8080"
 
 [start]
-cmd = "npm start"
+cmd = "node railway-start.js"

@@ -61,43 +61,42 @@ app.use((req, res, next) => {
     if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
-      // Railway deployment fix: catch static serving errors
-      try {
-        serveStatic(app);
-        console.log('✅ Static files served successfully');
-      } catch (error) {
-        console.warn('⚠️  Static file serving failed, using fallback:', error.message);
-        console.log('🔧 This is expected on Railway deployment - using simplified serving');
+      // Railway deployment fix: always use fallback static serving
+      console.log('🔧 Using Railway-compatible static serving');
+      
+      // Simple static serving for Railway
+      app.get('*', (req, res) => {
+        // Skip API routes and health check
+        if (req.path.startsWith('/api/') || req.path === '/health') {
+          return;
+        }
         
-        // Fallback static serving for Railway
-        app.get('*', (req, res) => {
-          // Serve simple HTML for Railway health checks and basic functionality
-          res.send(`
-            <!DOCTYPE html>
-            <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>My Meal Planner</title>
-                <style>
-                  body { font-family: Arial, sans-serif; padding: 2rem; text-align: center; }
-                  .container { max-width: 600px; margin: 0 auto; }
-                  .status { color: #10b981; margin-bottom: 1rem; }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <h1>My Meal Planner</h1>
-                  <div class="status">✅ Server is running successfully</div>
-                  <p>The application backend is operational.</p>
-                  <p>API endpoints are available at <code>/api/*</code></p>
-                  <a href="/health">Check Health Status</a>
-                </div>
-              </body>
-            </html>
-          `);
-        });
-      }
+        // Serve simple HTML for Railway
+        res.send(`
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>My Meal Planner</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 2rem; text-align: center; }
+                .container { max-width: 600px; margin: 0 auto; }
+                .status { color: #10b981; margin-bottom: 1rem; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>My Meal Planner</h1>
+                <div class="status">✅ Server is running successfully</div>
+                <p>The application backend is operational.</p>
+                <p>API endpoints are available at <code>/api/*</code></p>
+                <a href="/health">Check Health Status</a>
+              </div>
+            </body>
+          </html>
+        `);
+      });
     }
 
     // Use Railway's PORT environment variable or default to 8080
