@@ -26,6 +26,7 @@ My Meal Planner is a subscription-based meal planning platform that helps famili
 - Display recipe images when available
 
 ## Recent Changes
+- **January 18, 2025**: 🔧 **RAILWAY ES6 MODULE FIX** - Fixed Railway startup script from ES6 modules to CommonJS to resolve import/require compatibility issues
 - **January 17, 2025**: ✅ **RAILWAY DEPLOYMENT FIXES** - Fixed port configuration (8080), health check endpoint, error handling, and server startup issues. Added comprehensive logging for debugging deployment problems.
 - **January 17, 2025**: ✅ **COMPLETE REBRANDING** - Changed entire application from "Plan My Plates" to "My Meal Planner" across all files, emails, and user interfaces.
 - **January 17, 2025**: ✅ **EMAIL AUTOMATION COMPLETE** - Implemented comprehensive SendGrid email system with welcome emails, meal plan summaries, grocery list notifications, and subscription confirmations. All emails feature professional templates with My Meal Planner branding.
